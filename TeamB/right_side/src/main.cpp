@@ -16,6 +16,7 @@
 // ArmMotor             motor         8               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
+#include <cmath>
 #include "vex.h" 
 
 using namespace vex;
@@ -187,10 +188,15 @@ long pid_turn(double angle) {
   return loop_count;
 }
 
+long pid_turn_by (double angle) 
+{
+  return pid_turn(imu.rotation() + angle);
+}
+
 ////////////////////////////////////
 // Find kp, ki and kd values that make pid most accurate
 ////////////////////////////////////
-void tune_pid(void)
+void tune_turn_pid(void)
 {
   turn_kp = 0.09;
   turn_ki = 0.0009;
@@ -204,6 +210,85 @@ void tune_pid(void)
   }
 
 }
+
+////////////////////////////////////DRIVE_PID////////////////////////////////////////
+
+double drive_kp = 0;
+double drive_ki = 0;
+double drive_kd = 0;
+double drive_tolerance = 1;    // we want to stop when we reach the desired angle +/- 1 degree
+
+long pid_drive(double distance) {
+  double delay = 20;   // imu can output reading at a rate of 50 hz (20 msec)
+  long loop_count = 0;
+  double error = 5000;
+  double total_error = 0;
+  double derivative = 0;
+  double prev_error = 0;
+  double voltage = 0;
+  double min_volt = 2.5;   // we don't want to apply less than min_volt, or else drivetrain won't move
+  double max_volt = 11.5;  // we don't want to apply more than max volt, or else we may damage motor
+  bool direction = true;
+  double rotation = distance / (4 * M_PI);
+  double current_rotation = (RightDriveSmart.position(turns) + LeftDriveSmart.position(turns)) / 2;
+  rotation += current_rotation;
+
+  DEBUG_PRINT(PRINT_LEVEL_NORMAL, "Turn to angle %.2f, current angle %.2f\n", distance, imu.rotation());
+  // keep turning until we reach desired angle +/- tolerance
+  while ((error > drive_tolerance) || (error < (-1 * drive_tolerance))) {
+    current_rotation = (RightDriveSmart.position(turns) + LeftDriveSmart.position(turns)) / 2;
+    error = rotation - current_rotation;
+    if (error < 0) {
+      error = error * -1;
+      direction = false;
+    } else {
+      direction = true;
+    }
+    total_error += error;   // used for integration term
+    derivative = error - prev_error;
+    voltage = drive_kp * error + drive_ki * total_error - drive_kd * derivative;
+    if (voltage < min_volt) {
+        voltage = min_volt;
+      } else if (voltage > max_volt) {
+      voltage = max_volt;
+    }
+    DEBUG_PRINT(PRINT_LEVEL_DEBUG, "error %.2f, voltage %.2f\n", error, voltage);
+    if (direction) {
+      RightDriveSmart.spin(forward, voltage, volt);
+      LeftDriveSmart.spin(forward, voltage, volt);
+    } else {
+      RightDriveSmart.spin(reverse, voltage, volt);
+      LeftDriveSmart.spin(reverse, voltage, volt);
+    }
+    prev_error = error;
+    wait(delay, msec);
+    ++loop_count;
+  }
+  RightDriveSmart.stop();
+  LeftDriveSmart.stop();
+  DEBUG_PRINT(PRINT_LEVEL_DEBUG, "drive by distance %.2f, loop count %ld\n", distance, loop_count);
+  return loop_count;
+}
+
+////////////////////////////////////
+// Find kp, ki and kd values that make pid most accurate
+////////////////////////////////////
+void tune_drive_pid(void)
+{
+  drive_kp = 0.09;
+  drive_ki = 0.0009;
+  drive_tolerance = 0.2;
+  long loop_count;
+  for(drive_kd = 0.0005; drive_kd <= 0.001; drive_kd += 0.0001) {
+    imu.calibrate();
+    wait(2, sec);
+    loop_count = pid_drive(24);
+    DEBUG_PRINT(PRINT_LEVEL_NORMAL, "kd %.4f, loop count %ld, final distance %.2f\n", drive_kd, loop_count, imu.rotation());
+  }
+}
+////////////////////////drive_pid/////////////////////////////////////
+
+
 
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
