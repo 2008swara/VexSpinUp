@@ -148,13 +148,14 @@ long pid_turn(double angle) {
   double derivative = 0;
   double prev_error = 0;
   double voltage = 0;
-  double min_volt = 2.5;   // we don't want to apply less than min_volt, or else drivetrain won't move
-  double max_volt = 11.5;  // we don't want to apply more than max volt, or else we may damage motor
+  double min_volt = 2;   // we don't want to apply less than min_volt, or else drivetrain won't move
+//  double max_volt = 11.5;  // we don't want to apply more than max volt, or else we may damage motor
+  double max_volt = 6.5;  // we don't want to apply more than max volt, or else we may damage motor
   bool direction = true;
 
   DEBUG_PRINT(PRINT_LEVEL_NORMAL, "Turn to angle %.2f, current angle %.2f\n", angle, imu.rotation());
   // keep turning until we reach desired angle +/- tolerance
-  while ((error > turn_tolerance) || (error < (-1 * turn_tolerance))) {
+  while (error > turn_tolerance) {
     error = angle - imu.rotation();
     if (error < 0) {
       error = error * -1;
@@ -170,7 +171,7 @@ long pid_turn(double angle) {
       } else if (voltage > max_volt) {
       voltage = max_volt;
     }
-    DEBUG_PRINT(PRINT_LEVEL_DEBUG, "error %.2f, voltage %.2f\n", error, voltage);
+    DEBUG_PRINT(PRINT_LEVEL_DEBUG, "error %.2f, voltage %.2f, direction %d, rotation %.2f\n", error, voltage, direction, imu.rotation());
     if (direction) {
       RightDriveSmart.spin(reverse, voltage, volt);
       LeftDriveSmart.spin(forward, voltage, volt);
@@ -198,14 +199,18 @@ long pid_turn_by (double angle)
 ////////////////////////////////////
 void tune_turn_pid(void)
 {
-  turn_kp = 0.09;
+  //turn_kp = 0.09; this was original
+  turn_kp = 0.15;
   turn_ki = 0.0009;
   turn_tolerance = 0.2;
+  turn_kd = 0.0;
   long loop_count;
-  for(turn_kd = 0.0005; turn_kd <= 0.001; turn_kd += 0.0001) {
-    imu.calibrate();
+  int i;
+  imu.calibrate();
+  wait(2, sec);
+  for(i = 0; i < 10; ++i) {
     wait(2, sec);
-    loop_count = pid_turn(90);
+    loop_count = pid_turn(90 * (i + 1));
     DEBUG_PRINT(PRINT_LEVEL_NORMAL, "kd %.4f, loop count %ld, final angle %.2f\n", turn_kd, loop_count, imu.rotation());
   }
 
@@ -233,7 +238,7 @@ long pid_drive(double distance) {
   double current_rotation = (RightDriveSmart.position(turns) + LeftDriveSmart.position(turns)) / 2;
   rotation += current_rotation;
 
-  DEBUG_PRINT(PRINT_LEVEL_NORMAL, "Turn to angle %.2f, current angle %.2f\n", distance, imu.rotation());
+  DEBUG_PRINT(PRINT_LEVEL_NORMAL, "Drive by distance %.2f\n", distance);
   // keep turning until we reach desired angle +/- tolerance
   while ((error > drive_tolerance) || (error < (-1 * drive_tolerance))) {
     current_rotation = (RightDriveSmart.position(turns) + LeftDriveSmart.position(turns)) / 2;
@@ -252,7 +257,10 @@ long pid_drive(double distance) {
       } else if (voltage > max_volt) {
       voltage = max_volt;
     }
-    DEBUG_PRINT(PRINT_LEVEL_DEBUG, "error %.2f, voltage %.2f\n", error, voltage);
+    if ((loop_count < 20) && (voltage > min_volt)){
+      voltage = min_volt + ((voltage - min_volt) / 20) * loop_count;
+    }
+    DEBUG_PRINT(PRINT_LEVEL_DEBUG, "error %.2f, voltage %.2f, direction %d, angle %.2f\n", error, voltage, direction, imu.rotation());
     if (direction) {
       RightDriveSmart.spin(forward, voltage, volt);
       LeftDriveSmart.spin(forward, voltage, volt);
@@ -275,15 +283,21 @@ long pid_drive(double distance) {
 ////////////////////////////////////
 void tune_drive_pid(void)
 {
-  drive_kp = 0.09;
-  drive_ki = 0.0009;
+  drive_kp = 3;
+  drive_ki = 0.0015;
+  drive_kd = 0.09;
   drive_tolerance = 0.2;
   long loop_count;
-  for(drive_kd = 0.0005; drive_kd <= 0.001; drive_kd += 0.0001) {
-    imu.calibrate();
+  int i;
+  for(i = 0; i < 1; ++i) {
     wait(2, sec);
-    loop_count = pid_drive(24);
-    DEBUG_PRINT(PRINT_LEVEL_NORMAL, "kd %.4f, loop count %ld, final distance %.2f\n", drive_kd, loop_count, imu.rotation());
+    loop_count = pid_drive(96);
+    DEBUG_PRINT(PRINT_LEVEL_NORMAL, "kd %.4f, loop count %ld, final angle %.2f\n", drive_kd, loop_count, imu.rotation());
+  }
+  for(i = 0; i < 1; ++i) {
+    wait(2, sec);
+    loop_count = pid_drive(-96);
+    DEBUG_PRINT(PRINT_LEVEL_NORMAL, "kd %.4f, loop count %ld, final angle %.2f\n", drive_kd, loop_count, imu.rotation());
   }
 }
 ////////////////////////drive_pid/////////////////////////////////////
@@ -498,10 +512,9 @@ void SpinShooter(void) {
 }
 
 void ShootOnce(void) {
-  /*Shooter_pneum.set(true);
+  Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter_pneum.set(false); */
-  tune_pid();
+  Shooter_pneum.set(false);
 }
 
 void usercontrol(void) {
@@ -509,7 +522,7 @@ void usercontrol(void) {
 
   double turnImportance = 1;
   double speed_ratio = (9.0 / 5.0);
-  tune_pid();
+  tune_turn_pid();
   while (1) {
 
     double turnVal = Controller.Axis3.position(percent);
