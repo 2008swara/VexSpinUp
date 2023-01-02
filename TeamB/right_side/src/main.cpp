@@ -114,6 +114,7 @@ void autonomous(void) {
   pid_turn_by(-90); 
   // turn left = 80, 20
   driveForward(25, 80);
+  Shooter.spin(forward, 8.5, volt);
   Intake.spin(reverse, 100, percent);
   pid_turn_by(-100);
   //pid_turn_by(-20);
@@ -121,9 +122,8 @@ void autonomous(void) {
   wait(1, sec);
   Intake.stop();
   //9
-  //Shooter.spin(forward, 9, volt);
-  Shooter.spin(forward, 360, rpm);
-  pid_turn_by(-145);
+  //Shooter.spin(forward, 315, rpm);
+  pid_turn_by(-148);
   //pid_turn_by(-70);
   wait(2, sec);
   /*for(int j = 0; j < 200; ++j) {
