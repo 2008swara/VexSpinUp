@@ -28,7 +28,7 @@ void driveForward(double rotation, double power);
 void driveBackward(double rotation, double power);
 void turnRight(double angle, double power);
 void turnLeft(double angle, double power);
-
+long pid_turn_by(double angle);
 #define PRINT_LEVEL_MUST 0
 #define PRINT_LEVEL_NORMAL 1
 #define PRINT_LEVEL_DEBUG 2
@@ -103,14 +103,56 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
-  driveBackward(26, 50);
-  turnRight(90, 30);
-  driveBackward(5, 50);
+  driveBackward(25, 80);
+  pid_turn_by(90);
+  // turn right = 90, 30
+  driveBackward(5, 80);
   Intake.spin(forward, 100, percent);
-  wait(400, msec);
+  wait(350, msec);
   Intake.stop();
-  driveForward(3, 30);
-  turnLeft(3, 10);
+  driveForward(3, 60);
+  pid_turn_by(-90); 
+  // turn left = 80, 20
+  driveForward(25, 80);
+  Intake.spin(reverse, 100, percent);
+  pid_turn_by(-100);
+  //pid_turn_by(-20);
+  driveBackward(23, 80);
+  wait(1, sec);
+  Intake.stop();
+  //9
+  //Shooter.spin(forward, 9, volt);
+  Shooter.spin(forward, 360, rpm);
+  pid_turn_by(-145);
+  //pid_turn_by(-70);
+  wait(2, sec);
+  /*for(int j = 0; j < 200; ++j) {
+    printf("rpm %.2f\n", Shooter.velocity(rpm));
+    wait(25, msec);
+  } */
+
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter_pneum.set(false);
+
+  //11
+
+  Shooter.spin(forward, 11, volt);
+  wait(600, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter_pneum.set(false);
+
+  //11
+
+  Shooter.spin(forward, 11, volt);
+  wait(600, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter_pneum.set(false);
+  Shooter.stop();
+
+  /* turnLeft(3, 10);
   Shooter.spin(forward, 10, volt);
   wait(4, sec);
   Shooter_pneum.set(true);
@@ -132,13 +174,13 @@ void autonomous(void) {
   Shooter.spin(forward, 8, volt);
   wait(4, sec);
   Shooter_pneum.set(true);
-  Shooter_pneum.set(false);
+  Shooter_pneum.set(false); */
 }
 
-double turn_kp = 0;
-double turn_ki = 0;
+double turn_kp = 0.1; //1.5
+double turn_ki = 0.0004; //0.0009
 double turn_kd = 0;
-double turn_tolerance = 1;    // we want to stop when we reach the desired angle +/- 1 degree
+double turn_tolerance = 0.2;    // we want to stop when we reach the desired angle +/- 1 degree
 
 long pid_turn(double angle) {
   double delay = 20;   // imu can output reading at a rate of 50 hz (20 msec)
@@ -200,7 +242,7 @@ long pid_turn_by (double angle)
 void tune_turn_pid(void)
 {
   //turn_kp = 0.09; this was original
-  turn_kp = 0.15;
+  turn_kp = 0.1;
   turn_ki = 0.0009;
   turn_tolerance = 0.2;
   turn_kd = 0.0;
@@ -342,7 +384,7 @@ void turnRight(double angle, double power) {
   RightDriveSmart.spin(reverse, power, percent);
   LeftDriveSmart.spin(forward, power, percent);
   while(current_angle < (start_angle + angle)){
-    wait(100, msec);
+    wait(20, msec);
     current_angle = imu.yaw();
   }
   
@@ -357,7 +399,7 @@ void turnLeft(double angle, double power) {
   LeftDriveSmart.spin(reverse, power, percent);
   RightDriveSmart.spin(forward, power, percent);
   while(current_angle > (start_angle - angle)){
-    wait(100, msec);
+    wait(20, msec);
     current_angle = imu.yaw();
   }
   LeftDriveSmart.stop();
