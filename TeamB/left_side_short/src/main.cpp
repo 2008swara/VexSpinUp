@@ -29,6 +29,7 @@ void driveBackward(double rotation, double power);
 void turnRight(double angle, double power);
 void turnLeft(double angle, double power);
 long pid_turn_by(double angle);
+long pid_drive(double distance);
 #define PRINT_LEVEL_MUST 0
 #define PRINT_LEVEL_NORMAL 1
 #define PRINT_LEVEL_DEBUG 2
@@ -103,28 +104,23 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
-  driveBackward(25, 80);
-  pid_turn_by(90);
-  // turn right = 90, 30
-  driveBackward(5, 80);
-  Intake.spin(forward, 100, percent); //doing rollers
-  wait(350, msec);
+  Shooter.spin(forward, 8, volt);
+  driveBackward(3.5, 80);
+  Intake.spin(forward, 100, percent); //does rollers
+  wait(375, msec);
   Intake.stop(); //rollers done
-  Shooter.spin(forward, 8.5, volt); //start shooter early to save time
   driveForward(3, 60);
-  pid_turn_by(-90); 
-  // turn left = 80, 20
-  driveForward(25, 80);
-  Intake.spin(reverse, 100, percent); //turn on intake for disc
-  pid_turn_by(-100);
-  //pid_turn_by(-20);
-  driveBackward(23, 80); //intake disc
-  //wait(1, sec);
-  //Intake.stop();
-  pid_turn_by(-148); //turn to shooting position
-  Intake.stop();
-  //pid_turn_by(-70);
-  //wait(2, sec);
+  pid_turn_by(-135);  
+  pid_drive(-37);
+  Intake.spin(reverse, 100, percent);
+  //pid_turn_by(-100);
+  //driveBackward(23, 80); //intake disc
+  //pid_turn_by(-90);
+  //pid_drive(-15);
+  pid_drive(-1.5);
+  pid_turn_by(95); //turn to shooting position
+  wait(1, sec);
+  pid_drive(6);
   Shooter_pneum.set(true); //shoots first
   wait(100, msec);
   Shooter_pneum.set(false);
@@ -138,7 +134,14 @@ void autonomous(void) {
   Shooter_pneum.set(true); //shoots third
   wait(100, msec);
   Shooter_pneum.set(false);
+  Shooter.spin(forward, 4, volt);
+  wait(600, msec);
+  Shooter_pneum.set(true); //shoots third
+  wait(100, msec);
+  Shooter_pneum.set(false);
   Shooter.stop();
+
+  
 }
 
 double turn_kp = 0.1; //1.5
@@ -154,7 +157,7 @@ long pid_turn(double angle) {
   double derivative = 0;
   double prev_error = 0;
   double voltage = 0;
-  double min_volt = 2;   // we don't want to apply less than min_volt, or else drivetrain won't move
+  double min_volt = 2.5;   // we don't want to apply less than min_volt, or else drivetrain won't move
 //  double max_volt = 11.5;  // we don't want to apply more than max volt, or else we may damage motor
   double max_volt = 6.5;  // we don't want to apply more than max volt, or else we may damage motor
   bool direction = true;
@@ -224,10 +227,10 @@ void tune_turn_pid(void)
 
 ////////////////////////////////////DRIVE_PID////////////////////////////////////////
 
-double drive_kp = 0;
-double drive_ki = 0;
-double drive_kd = 0;
-double drive_tolerance = 1;    // we want to stop when we reach the desired angle +/- 1 degree
+double drive_kp = 3;
+double drive_ki = 0.0015;
+double drive_kd = 0.09;
+double drive_tolerance = 0.1;    // we want to stop when we reach the desired angle +/- 1 degree
 
 long pid_drive(double distance) {
   double delay = 20;   // imu can output reading at a rate of 50 hz (20 msec)
@@ -528,7 +531,7 @@ void usercontrol(void) {
 
   double turnImportance = 1;
   double speed_ratio = (9.0 / 5.0);
-  tune_turn_pid();
+  //tune_turn_pid();
   while (1) {
 
     double turnVal = Controller.Axis3.position(percent);

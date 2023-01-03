@@ -86,6 +86,9 @@ void pre_auton(void) {
   vexcodeInit();
   Drivetrain.setDriveVelocity(80, percent);
   imu.calibrate();
+  while (imu.isCalibrating()) {
+    wait(25, msec);
+  }
   RightDriveSmart.setStopping(hold);
   LeftDriveSmart.setStopping(hold);
   // All activities that occur before the competition starts
@@ -104,13 +107,13 @@ void pre_auton(void) {
 
 void autonomous(void) {
   driveBackward(25, 80);
+  Shooter.spin(forward, 8, volt); //start shooter early to save time - 8.5
   pid_turn_by(90);
   // turn right = 90, 30
   driveBackward(5, 80);
   Intake.spin(forward, 100, percent); //doing rollers
-  wait(350, msec);
+  wait(375, msec);
   Intake.stop(); //rollers done
-  Shooter.spin(forward, 8.5, volt); //start shooter early to save time
   driveForward(3, 60);
   pid_turn_by(-90); 
   // turn left = 80, 20
@@ -121,7 +124,7 @@ void autonomous(void) {
   driveBackward(23, 80); //intake disc
   //wait(1, sec);
   //Intake.stop();
-  pid_turn_by(-148); //turn to shooting position
+  pid_turn_by(-153); //turn to shooting position
   Intake.stop();
   //pid_turn_by(-70);
   //wait(2, sec);
@@ -528,7 +531,7 @@ void usercontrol(void) {
 
   double turnImportance = 1;
   double speed_ratio = (9.0 / 5.0);
-  tune_turn_pid();
+  //tune_turn_pid();
   while (1) {
 
     double turnVal = Controller.Axis3.position(percent);

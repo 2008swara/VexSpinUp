@@ -528,7 +528,7 @@ void usercontrol(void) {
 
   double turnImportance = 1;
   double speed_ratio = (9.0 / 5.0);
-  tune_turn_pid();
+ // tune_turn_pid();
   while (1) {
 
     double turnVal = Controller.Axis3.position(percent);
