@@ -14,6 +14,7 @@ extern digital_out String;
 extern inertial imu;
 extern timer testtimer;
 extern timer DebounceTimer;
+extern timer PidDriveTimer;
 /** 
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
  * 

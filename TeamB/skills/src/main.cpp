@@ -24,11 +24,14 @@ using namespace vex;
 // A global instance of competition
 competition Competition;
 void driveTrain(void);
-void driveForward(double rotation, double power);
-void driveBackward(double rotation, double power);
+void driveForward(double rotation, double power, int32_t time=60000);
+void driveBackward(double rotation, double power, int32_t time=60000);
 void turnRight(double angle, double power);
 void turnLeft(double angle, double power);
 long pid_turn_by(double angle);
+long pid_drive(double distance, int32_t time=60000);
+void extShoot(void);
+void driveBackwardTime(double time, double power);
 #define PRINT_LEVEL_MUST 0
 #define PRINT_LEVEL_NORMAL 1
 #define PRINT_LEVEL_DEBUG 2
@@ -86,6 +89,9 @@ void pre_auton(void) {
   vexcodeInit();
   Drivetrain.setDriveVelocity(80, percent);
   imu.calibrate();
+  while (imu.isCalibrating()) {
+    wait(25, msec);
+  }
   RightDriveSmart.setStopping(hold);
   LeftDriveSmart.setStopping(hold);
   // All activities that occur before the competition starts
@@ -103,42 +109,58 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
-  driveBackward(25, 80);
-  pid_turn_by(90);
-  // turn right = 90, 30
-  driveBackward(5, 80);
-  Intake.spin(forward, 100, percent); //doing rollers
-  wait(350, msec);
-  Intake.stop(); //rollers done
-  Shooter.spin(forward, 8.5, volt); //start shooter early to save time
-  driveForward(3, 60);
-  pid_turn_by(-90); 
-  // turn left = 80, 20
-  driveForward(25, 80);
-  Intake.spin(reverse, 100, percent); //turn on intake for disc
-  pid_turn_by(-100);
-  //pid_turn_by(-20);
-  driveBackward(23, 80); //intake disc
-  //wait(1, sec);
-  //Intake.stop();
-  pid_turn_by(-148); //turn to shooting position
+  driveBackward(3.5, 45, 1000);
+  //pid_drive(-3.5);
+  Intake.spin(reverse, 100, percent);
+  wait(300, msec);
+  pid_drive(3);
+  pid_turn_by(135);
+  pid_drive(-21.5);
+  pid_turn_by(-42);
   Intake.stop();
-  //pid_turn_by(-70);
-  //wait(2, sec);
-  Shooter_pneum.set(true); //shoots first
-  wait(100, msec);
-  Shooter_pneum.set(false);
-  Shooter.spin(forward, 11, volt);
-  wait(600, msec);
-  Shooter_pneum.set(true); //shoots second
-  wait(100, msec);
-  Shooter_pneum.set(false);
-  Shooter.spin(forward, 11, volt);
-  wait(600, msec);
-  Shooter_pneum.set(true); //shoots third
-  wait(100, msec);
-  Shooter_pneum.set(false);
+  driveBackward(11, 45, 1500);
+  Intake.spin(reverse, 100, percent);
+  wait(350, msec);
+  Intake.stop();
+  Shooter.spin(forward, 7, volt);
+  pid_drive(4);
+  pid_turn_by(-87);
+  pid_drive(30);
+  pid_turn_by(-13);
+  pid_drive(26, 4000);
+  LaunchShoot();
   Shooter.stop();
+  pid_drive(-10);
+  pid_turn_by(6);
+  pid_drive(-38);
+  pid_turn_by(-140);
+  Intake.spin(reverse, 100, percent);
+  pid_drive(-40);
+  Shooter.spin(forward, 7 , volt);
+  pid_drive(-30);
+  Intake.stop();
+  pid_turn_by(-45);
+  pid_drive(-40);
+  pid_turn_by(90);
+  pid_drive(7);
+  //-15
+  pid_turn_by(-12);
+  LaunchShoot();
+  pid_turn_by(30);
+  pid_drive(-54);
+  pid_turn_by(-90);
+  pid_drive(-3.5);
+  Intake.spin(reverse, 100, percent);
+  wait(300, msec);
+  pid_drive(3);
+  pid_turn_by(135);
+  pid_drive(-19);
+  pid_turn_by(-45);
+  pid_drive(-15);
+  wait(300, msec);
+  pid_drive(14);
+  pid_turn_by(-45);
+  extShoot();
 }
 
 double turn_kp = 0.1; //1.5
@@ -154,7 +176,7 @@ long pid_turn(double angle) {
   double derivative = 0;
   double prev_error = 0;
   double voltage = 0;
-  double min_volt = 2;   // we don't want to apply less than min_volt, or else drivetrain won't move
+  double min_volt = 2.5;   // we don't want to apply less than min_volt, or else drivetrain won't move
 //  double max_volt = 11.5;  // we don't want to apply more than max volt, or else we may damage motor
   double max_volt = 6.5;  // we don't want to apply more than max volt, or else we may damage motor
   bool direction = true;
@@ -224,12 +246,12 @@ void tune_turn_pid(void)
 
 ////////////////////////////////////DRIVE_PID////////////////////////////////////////
 
-double drive_kp = 0;
-double drive_ki = 0;
-double drive_kd = 0;
-double drive_tolerance = 1;    // we want to stop when we reach the desired angle +/- 1 degree
+double drive_kp = 3;
+double drive_ki = 0.0015;
+double drive_kd = 0.09;
+double drive_tolerance = 0.1;    // we want to stop when we reach the desired angle +/- 1 degree
 
-long pid_drive(double distance) {
+long pid_drive(double distance, int32_t time) {
   double delay = 20;   // imu can output reading at a rate of 50 hz (20 msec)
   long loop_count = 0;
   double error = 5000;
@@ -243,10 +265,12 @@ long pid_drive(double distance) {
   double rotation = distance / (4 * M_PI);
   double current_rotation = (RightDriveSmart.position(turns) + LeftDriveSmart.position(turns)) / 2;
   rotation += current_rotation;
+  double start_time = PidDriveTimer.time(msec);
 
   DEBUG_PRINT(PRINT_LEVEL_NORMAL, "Drive by distance %.2f\n", distance);
+  Drivetrain.setTimeout(time, msec);
   // keep turning until we reach desired angle +/- tolerance
-  while ((error > drive_tolerance) || (error < (-1 * drive_tolerance))) {
+  while ((error > drive_tolerance) && (PidDriveTimer.time(msec) < (start_time + time))) {
     current_rotation = (RightDriveSmart.position(turns) + LeftDriveSmart.position(turns)) / 2;
     error = rotation - current_rotation;
     if (error < 0) {
@@ -322,18 +346,20 @@ void tune_drive_pid(void)
 bool driveforward = false;
 
 
-//drives robot forward
+//drives robot backward
 // rotation: how many turns of the wheel to travel backward
 // power: velocity of wheels in percentage
-void driveBackward(double rotation, double power) {
+void driveBackward(double rotation, double power, int32_t time) {
+  Drivetrain.setTimeout(time, msec);
   Drivetrain.setDriveVelocity(power, percent);
   Drivetrain.driveFor(reverse, rotation, inches);
 }
 
-//drives robot backward
+//drives robot forward
 // rotation: how many turns of the wheel to travel backward
 // power: velocity of wheels in percentage
-void driveForward(double rotation, double power) {
+void driveForward(double rotation, double power, int32_t time) {
+  Drivetrain.setTimeout(time, msec);
   Drivetrain.setDriveVelocity(power, percent);
   Drivetrain.driveFor(forward, rotation, inches);
 }

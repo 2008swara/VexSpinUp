@@ -87,6 +87,9 @@ void pre_auton(void) {
   vexcodeInit();
   Drivetrain.setDriveVelocity(80, percent);
   imu.calibrate();
+  while (imu.isCalibrating()) {
+    wait(25, msec);
+  }
   RightDriveSmart.setStopping(hold);
   LeftDriveSmart.setStopping(hold);
   // All activities that occur before the competition starts
@@ -105,20 +108,20 @@ void pre_auton(void) {
 
 void autonomous(void) {
   Shooter.spin(forward, 8, volt);
-  driveBackward(3.5, 80);
+  pid_drive(-3.5);
   Intake.spin(forward, 100, percent); //does rollers
-  wait(375, msec);
+  wait(350, msec);
   Intake.stop(); //rollers done
-  driveForward(3, 60);
+  pid_drive(3);
   pid_turn_by(-135);  
-  pid_drive(-37);
+  pid_drive(-37.5);
   Intake.spin(reverse, 100, percent);
   //pid_turn_by(-100);
   //driveBackward(23, 80); //intake disc
   //pid_turn_by(-90);
   //pid_drive(-15);
   pid_drive(-1.5);
-  pid_turn_by(95); //turn to shooting position
+  pid_turn_by(94.5); //turn to shooting position
   wait(1, sec);
   pid_drive(6);
   Shooter_pneum.set(true); //shoots first
@@ -134,8 +137,8 @@ void autonomous(void) {
   Shooter_pneum.set(true); //shoots third
   wait(100, msec);
   Shooter_pneum.set(false);
-  Shooter.spin(forward, 4, volt);
-  wait(600, msec);
+  Shooter.spin(forward, 3, volt);
+  wait(1, sec);
   Shooter_pneum.set(true); //shoots third
   wait(100, msec);
   Shooter_pneum.set(false);
