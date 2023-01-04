@@ -109,43 +109,52 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
-  driveBackward(3.5, 45, 1000);
+  driveBackward(3.5, 45, 1000); //goes back into rollers
   //pid_drive(-3.5);
   Intake.spin(reverse, 100, percent);
-  wait(300, msec);
-  pid_drive(3);
+  wait(300, msec); //rollers done
+  pid_drive(3); //goes away from rollers
   pid_turn_by(135);
-  pid_drive(-21.5);
+  pid_drive(-21.5); //picks up disc
   pid_turn_by(-42);
   Intake.stop();
-  driveBackward(11, 45, 1500);
+  driveBackward(11, 45, 1500); //goes back into rollers
   Intake.spin(reverse, 100, percent);
-  wait(350, msec);
+  wait(350, msec); //rollers done
   Intake.stop();
-  Shooter.spin(forward, 7, volt);
-  pid_drive(4);
+  Shooter.spin(forward, 7, volt); //shooter starts
+  pid_drive(4); //goes away from rollers
   pid_turn_by(-87);
-  pid_drive(30);
-  pid_turn_by(-13);
-  pid_drive(26, 4000);
-  LaunchShoot();
+  pid_drive(30); //drives toward goal
+  pid_turn_by(-90); //turns to wall
+  driveForward(10, 45, 1000); //drives shooter side into wall
+  imu.calibrate(); //calibrates
+  while (imu.isCalibrating()) {
+    wait(25, msec);
+  }
+  pid_drive(-10); //goes back
+  pid_turn_by(90); //turns to shoot
+  //pid_turn_by(-6); //turns 
+  pid_drive(24, 4000); //drives closer to goal to shoot
+  LaunchShoot(); //shoots first 3 discs
   Shooter.stop();
   pid_drive(-10);
-  pid_turn_by(6);
+  pid_turn_by(6); //corrects for angled shooting position
   pid_drive(-38);
-  pid_turn_by(-140);
+  pid_turn_by(-140); //turns to pick up 3 in a row discs
   Intake.spin(reverse, 100, percent);
-  pid_drive(-40);
+  pid_drive(-40); //picks up discs
   Shooter.spin(forward, 7 , volt);
-  pid_drive(-30);
+  pid_drive(-30); //still picking up discs/driving to position
   Intake.stop();
-  pid_turn_by(-45);
+  pid_turn_by(-45); //turn straight
   pid_drive(-40);
   pid_turn_by(90);
-  pid_drive(7);
+  pid_drive(4);
   //-15
   pid_turn_by(-12);
   LaunchShoot();
+  return;
   pid_turn_by(30);
   pid_drive(-54);
   pid_turn_by(-90);
