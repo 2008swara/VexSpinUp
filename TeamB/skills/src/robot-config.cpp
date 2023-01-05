@@ -36,6 +36,8 @@ timer testtimer = timer();
 timer DebounceTimer = timer();
 timer PidDriveTimer = timer();
 
+distance dist_sensor = distance(PORT10);
+
 
 
 /**

@@ -15,6 +15,7 @@ extern inertial imu;
 extern timer testtimer;
 extern timer DebounceTimer;
 extern timer PidDriveTimer;
+extern distance dist_sensor;
 /** 
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
  * 
