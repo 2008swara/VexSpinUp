@@ -29,7 +29,7 @@ void driveBackward(double rotation, double power, int32_t time=60000);
 void turnRight(double angle, double power);
 void turnLeft(double angle, double power);
 long pid_turn_by(double angle);
-long pid_drive(double distance, int32_t time=60000, double space=200);
+long pid_drive(double distance, int32_t time=60000, double space=0);
 void extShoot(void);
 void driveBackwardTime(double time, double power);
 #define PRINT_LEVEL_MUST 0
@@ -113,7 +113,6 @@ void autonomous(void) {
   //pid_drive(-3.5);
   Intake.spin(reverse, 100, percent);
   wait(300, msec); //rollers done
-  wait(1, seconds);
   pid_drive(4.5); //goes away from rollers
   pid_turn_by(135);
   pid_drive(-20.5); //picks up disc
@@ -128,7 +127,7 @@ void autonomous(void) {
   pid_turn_by(-87);
   pid_drive(37); //drives toward goal
   pid_turn_by(-90); //turns to wall
-  driveForward(14, 55, 1000); //drives shooter side into wall
+  driveForward(14, 60, 1000); //drives shooter side into wall
   imu.calibrate(); //calibrates
   while (imu.isCalibrating()) {
     wait(25, msec);
@@ -146,9 +145,9 @@ void autonomous(void) {
   pid_drive(-35);
   pid_turn_by(-132); //turns to pick up 3 in a row discs
   Intake.spin(reverse, 100, percent);
-  pid_drive(-40); //picks up discs
+  pid_drive(-46); //picks up discs
   Shooter.spin(forward, 7 , volt);
-  pid_drive(-40); //still picking up discs/driving to position
+  pid_drive(-38); //still picking up discs/driving to position
   Intake.stop();
   pid_turn_by(140); //turn straight
   pid_drive(20);
@@ -158,27 +157,28 @@ void autonomous(void) {
     wait(25, msec);
   }
   pid_drive(-6.5); //goes back
-  wait(2, sec);
-  pid_turn_by(-90);
-  pid_drive(20, 1000, 52);
+  pid_turn_by(-91);
+  pid_drive(50, 5000, 55);
   pid_turn_by(-16);
   LaunchShoot();
   pid_turn_by(16);
   pid_drive(-51);
   pid_turn_by(-90);
-  pid_drive(-3.5);
+  pid_drive(-10, 1000);
   Intake.spin(reverse, 100, percent);
   wait(300, msec);
-  pid_drive(4);
+  pid_drive(10);
+  Intake.stop();
   pid_turn_by(135);
   pid_drive(-15);
   pid_turn_by(-47);
-  pid_drive(-12, 1000);
-  driveBackward(12, 55, 1000);
-  Intake.stop();
+  pid_drive(-24, 2000);
+  Intake.spin(reverse, 100, percent);
   wait(300, msec);
-  pid_drive(14);
+  Intake.stop();
+  pid_drive(16);
   pid_turn_by(-45);
+  pid_drive(-6);
   extShoot();
 }
 
@@ -285,10 +285,12 @@ long pid_drive(double distance, int32_t time, double space) {
   double current_rotation = (RightDriveSmart.position(turns) + LeftDriveSmart.position(turns)) / 2;
   rotation += current_rotation;
   double start_time = PidDriveTimer.time(msec);
-  double current_space = dist_sensor.objectDistance(inches);
+  double current_space = 144;
+  if (dist_sensor.isObjectDetected()) {
+    current_space = dist_sensor.objectDistance(inches);
+  }
 
-  DEBUG_PRINT(PRINT_LEVEL_NORMAL, "Drive by distance %.2f\n", distance);
-  Drivetrain.setTimeout(time, msec);
+  DEBUG_PRINT(PRINT_LEVEL_NORMAL, "Drive by distance %.2f, current_space %.2f, space %.2f\n", distance, current_space, space);
   // keep turning until we reach desired angle +/- tolerance
   while ((error > drive_tolerance) && (PidDriveTimer.time(msec) < (start_time + time)) && (current_space >= space )) {
     current_rotation = (RightDriveSmart.position(turns) + LeftDriveSmart.position(turns)) / 2;
@@ -319,6 +321,9 @@ long pid_drive(double distance, int32_t time, double space) {
       LeftDriveSmart.spin(reverse, voltage, volt);
     }
     prev_error = error;
+    if (dist_sensor.isObjectDetected()) {
+      current_space = dist_sensor.objectDistance(inches);
+    }
     wait(delay, msec);
     ++loop_count;
   }
