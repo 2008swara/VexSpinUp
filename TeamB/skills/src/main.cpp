@@ -32,6 +32,7 @@ long pid_turn_by(double angle);
 long pid_drive(double distance, int32_t time=60000, double space=0);
 void extShoot(void);
 void driveBackwardTime(double time, double power);
+long distance_pid_drive(double space);
 #define PRINT_LEVEL_MUST 0
 #define PRINT_LEVEL_NORMAL 1
 #define PRINT_LEVEL_DEBUG 2
@@ -107,6 +108,9 @@ void pre_auton(void) {
 /*                                                                           */
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
+/*void autonomous(void) {
+  distance_pid_drive(24);
+}*/
 
 void autonomous(void) {
   driveBackward(3.5, 45, 1000); //goes back into rollers
@@ -114,9 +118,10 @@ void autonomous(void) {
   Intake.spin(reverse, 100, percent);
   wait(300, msec); //rollers done
   pid_drive(4.5); //goes away from rollers
-  pid_turn_by(135);
-  pid_drive(-20.5); //picks up disc
-  pid_turn_by(-41);
+  pid_turn_by(138); //135
+  pid_drive(-18.5); //picks up disc //-20.5
+  wait(1, sec);
+  pid_turn_by(-44); //-41
   Intake.stop();
   driveBackward(11, 30, 1500); //goes back into rollers
   Intake.spin(reverse, 100, percent);
@@ -136,15 +141,26 @@ void autonomous(void) {
   pid_turn_by(87); //turns to shoot
   //pid_turn_by(-6); //turns 
   pid_drive(14, 2000); //drives closer to goal to shoot
-  //pid_turn_by(-1);
+  pid_turn_by(-1);
   LaunchShoot(); //shoots first 3 discs
   Shooter.stop();
-  //pid_turn_by(1);
-  pid_drive(-6);
+  pid_turn_by(1);
+  //below this is test code for calibrating after second shoot
+  pid_drive(-35);
+  pid_turn_by(-90);
+  driveForward(14, 60, 1000);
+  imu.calibrate(); //calibrates
+  while (imu.isCalibrating()) {
+    wait(25, msec);
+  }
+  pid_drive(-17); //-15
+  Intake.spin(reverse, 100, percent);
+  pid_turn_by(-42);
+  /*pid_drive(-6);
   pid_turn_by(-6); //corrects for angled shooting position
   pid_drive(-35);
   pid_turn_by(-132); //turns to pick up 3 in a row discs
-  Intake.spin(reverse, 100, percent);
+  */
   pid_drive(-46); //picks up discs
   Shooter.spin(forward, 7 , volt);
   pid_drive(-38); //still picking up discs/driving to position
@@ -158,7 +174,8 @@ void autonomous(void) {
   }
   pid_drive(-6.5); //goes back
   pid_turn_by(-91);
-  pid_drive(50, 5000, 55);
+  pid_drive(15, 3000);
+  //distance_pid_drive(52);
   pid_turn_by(-16);
   LaunchShoot();
   pid_turn_by(16);
@@ -357,6 +374,69 @@ void tune_drive_pid(void)
 }
 ////////////////////////drive_pid/////////////////////////////////////
 
+
+
+////////////////////////DISTANCE_PID_DRIVE////////////
+long distance_pid_drive(double space) {
+  double delay = 20;   // imu can output reading at a rate of 50 hz (20 msec)
+  long loop_count = 0;
+  double error = 5000;
+  double total_error = 0;
+  double derivative = 0;
+  double prev_error = 0;
+  double voltage = 0;
+  double min_volt = 2.5;   // we don't want to apply less than min_volt, or else drivetrain won't move
+  double max_volt = 11.5;  // we don't want to apply more than max volt, or else we may damage motor
+  bool direction = true;
+  //double rotation = distance / (4 * M_PI);
+  //double current_rotation = (RightDriveSmart.position(turns) + LeftDriveSmart.position(turns)) / 2;
+  //rotation += current_rotation;
+  //double start_time = PidDriveTimer.time(msec);
+  double current_space = 144;
+  if (dist_sensor.isObjectDetected()) {
+    current_space = dist_sensor.objectDistance(inches);
+  }
+ // DEBUG_PRINT(PRINT_LEVEL_NORMAL, "Drive by distance %.2f, current_space %.2f, space %.2f\n", distance, current_space, space);
+  // keep turning until we reach desired angle +/- tolerance
+  while (error > drive_tolerance) {
+    //current_rotation = (RightDriveSmart.position(turns) + LeftDriveSmart.position(turns)) / 2;
+    error = current_space - space;
+    if (error < 0) {
+      error = error * -1;
+      direction = false;
+    } else {
+      direction = true;
+    }
+    total_error += error;   // used for integration term
+    derivative = error - prev_error;
+    voltage = drive_kp * error + drive_ki * total_error - drive_kd * derivative;
+    if (voltage < min_volt) {
+        voltage = min_volt;
+      } else if (voltage > max_volt) {
+      voltage = max_volt;
+    }
+    if ((loop_count < 20) && (voltage > min_volt)){
+      voltage = min_volt + ((voltage - min_volt) / 20) * loop_count;
+    }
+    DEBUG_PRINT(PRINT_LEVEL_DEBUG, "error %.2f, voltage %.2f, direction %d, angle %.2f\n", error, voltage, direction, imu.rotation());
+    if (direction) {
+      RightDriveSmart.spin(forward, voltage, volt);
+      LeftDriveSmart.spin(forward, voltage, volt);
+    } else {
+      RightDriveSmart.spin(reverse, voltage, volt);
+      LeftDriveSmart.spin(reverse, voltage, volt);
+    }
+    prev_error = error;
+    current_space = dist_sensor.objectDistance(inches);
+    wait(delay, msec);
+    ++loop_count;
+  }
+  RightDriveSmart.stop();
+  LeftDriveSmart.stop();
+  //DEBUG_PRINT(PRINT_LEVEL_DEBUG, "drive by distance %.2f, loop count %ld\n", distance, loop_count);
+  return loop_count;
+}
+//////////////////////////DISTANCE_PID_DRIVE///////////////////////
 
 
 /*---------------------------------------------------------------------------*/
