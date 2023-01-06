@@ -108,9 +108,8 @@ void pre_auton(void) {
 /*                                                                           */
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
-/*void autonomous(void) {
-  distance_pid_drive(24);
-}*/
+
+
 
 void autonomous(void) {
   driveBackward(3.5, 45, 1000); //goes back into rollers
@@ -377,6 +376,13 @@ void tune_drive_pid(void)
 
 
 ////////////////////////DISTANCE_PID_DRIVE////////////
+
+double distance_drive_kp = 3/12.3;
+double distance_drive_ki = 0.0015/12.3;
+double distance_drive_kd = 0.09/12.3;
+double distance_drive_tolerance = 0.5;
+
+
 long distance_pid_drive(double space) {
   double delay = 20;   // imu can output reading at a rate of 50 hz (20 msec)
   long loop_count = 0;
@@ -396,9 +402,9 @@ long distance_pid_drive(double space) {
   if (dist_sensor.isObjectDetected()) {
     current_space = dist_sensor.objectDistance(inches);
   }
- // DEBUG_PRINT(PRINT_LEVEL_NORMAL, "Drive by distance %.2f, current_space %.2f, space %.2f\n", distance, current_space, space);
+  DEBUG_PRINT(PRINT_LEVEL_NORMAL, "current_space %.2f, space %.2f\n", current_space, space);
   // keep turning until we reach desired angle +/- tolerance
-  while (error > drive_tolerance) {
+  while (error > distance_drive_tolerance) {
     //current_rotation = (RightDriveSmart.position(turns) + LeftDriveSmart.position(turns)) / 2;
     error = current_space - space;
     if (error < 0) {
@@ -409,7 +415,7 @@ long distance_pid_drive(double space) {
     }
     total_error += error;   // used for integration term
     derivative = error - prev_error;
-    voltage = drive_kp * error + drive_ki * total_error - drive_kd * derivative;
+    voltage = distance_drive_kp * error + distance_drive_ki * total_error - distance_drive_kd * derivative;
     if (voltage < min_volt) {
         voltage = min_volt;
       } else if (voltage > max_volt) {
@@ -419,13 +425,13 @@ long distance_pid_drive(double space) {
       voltage = min_volt + ((voltage - min_volt) / 20) * loop_count;
     }
     DEBUG_PRINT(PRINT_LEVEL_DEBUG, "error %.2f, voltage %.2f, direction %d, angle %.2f\n", error, voltage, direction, imu.rotation());
-    if (direction) {
+    /*if (direction) {
       RightDriveSmart.spin(forward, voltage, volt);
       LeftDriveSmart.spin(forward, voltage, volt);
     } else {
       RightDriveSmart.spin(reverse, voltage, volt);
       LeftDriveSmart.spin(reverse, voltage, volt);
-    }
+    }*/
     prev_error = error;
     current_space = dist_sensor.objectDistance(inches);
     wait(delay, msec);
