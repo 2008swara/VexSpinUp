@@ -34,6 +34,9 @@ inertial imu = inertial(PORT16);
 
 timer testtimer = timer();
 timer DebounceTimer = timer();
+timer PidDriveTimer = timer();
+
+distance dist_sensor = distance(PORT10);
 
 
 

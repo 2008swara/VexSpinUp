@@ -24,11 +24,15 @@ using namespace vex;
 // A global instance of competition
 competition Competition;
 void driveTrain(void);
-void driveForward(double rotation, double power);
-void driveBackward(double rotation, double power);
+void driveForward(double rotation, double power, int32_t time=60000);
+void driveBackward(double rotation, double power, int32_t time=60000);
 void turnRight(double angle, double power);
 void turnLeft(double angle, double power);
 long pid_turn_by(double angle);
+long pid_drive(double distance, int32_t time=60000, double space=0);
+void extShoot(void);
+void driveBackwardTime(double time, double power);
+long distance_pid_drive(double space);
 #define PRINT_LEVEL_MUST 0
 #define PRINT_LEVEL_NORMAL 1
 #define PRINT_LEVEL_DEBUG 2
@@ -36,6 +40,7 @@ long pid_turn_by(double angle);
 #define DEBUG_LEVEL PRINT_LEVEL_DEBUG
 
 #define DEBUG_PRINT(dl, fmt, args...) {if (dl <= DEBUG_LEVEL) printf(fmt, ## args);}
+
 
 // define your global instances of motors and other devices here
 
@@ -97,7 +102,7 @@ void pre_auton(void) {
 
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
-/*                              Autonomous Task                   s           */
+/*                              Autonomous Task                              */
 /*                                                                           */
 /*  This task is used to control your robot during the autonomous phase of   */
 /*  a VEX Competition.                                                       */
@@ -106,26 +111,30 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
-  driveBackward(25, 80);
+  pid_drive(-25);
   Shooter.spin(forward, 8, volt); //start shooter early to save time - 8.5
   pid_turn_by(90);
   // turn right = 90, 30
-  driveBackward(5, 80);
+  driveBackward(5, 45, 1000);
   Intake.spin(forward, 100, percent); //doing rollers
   wait(375, msec);
   Intake.stop(); //rollers done
-  driveForward(3, 60);
+  pid_drive(3);
   pid_turn_by(-90); 
   // turn left = 80, 20
-  driveForward(25, 80);
+  //driveForward(25, 60);
+  pid_drive(25);
   Intake.spin(reverse, 100, percent); //turn on intake for disc
-  pid_turn_by(-100);
+  pid_turn_by(-96);
   //pid_turn_by(-20);
-  driveBackward(23, 80); //intake disc
+  //driveBackward(23, 60);
+  pid_drive(-23);//intake disc
   //wait(1, sec);
   //Intake.stop();
-  pid_turn_by(-153); //turn to shooting position
-  Intake.stop();
+  //Intake.stop();
+  //driveBackward(6, 45);
+  //pid_drive(-6);
+  pid_turn_by(-158); //turn to shooting position
   //pid_turn_by(-70);
   //wait(2, sec);
   Shooter_pneum.set(true); //shoots first
@@ -157,7 +166,7 @@ long pid_turn(double angle) {
   double derivative = 0;
   double prev_error = 0;
   double voltage = 0;
-  double min_volt = 2;   // we don't want to apply less than min_volt, or else drivetrain won't move
+  double min_volt = 2.5;   // we don't want to apply less than min_volt, or else drivetrain won't move
 //  double max_volt = 11.5;  // we don't want to apply more than max volt, or else we may damage motor
   double max_volt = 6.5;  // we don't want to apply more than max volt, or else we may damage motor
   bool direction = true;
@@ -227,12 +236,12 @@ void tune_turn_pid(void)
 
 ////////////////////////////////////DRIVE_PID////////////////////////////////////////
 
-double drive_kp = 0;
-double drive_ki = 0;
-double drive_kd = 0;
-double drive_tolerance = 1;    // we want to stop when we reach the desired angle +/- 1 degree
+double drive_kp = 4.2; //3
+double drive_ki = 0.0015;
+double drive_kd = 0.09;
+double drive_tolerance = 0.1;    // we want to stop when we reach the desired angle +/- 1 degree
 
-long pid_drive(double distance) {
+long pid_drive(double distance, int32_t time, double space) {
   double delay = 20;   // imu can output reading at a rate of 50 hz (20 msec)
   long loop_count = 0;
   double error = 5000;
@@ -246,10 +255,15 @@ long pid_drive(double distance) {
   double rotation = distance / (4 * M_PI);
   double current_rotation = (RightDriveSmart.position(turns) + LeftDriveSmart.position(turns)) / 2;
   rotation += current_rotation;
+  double start_time = PidDriveTimer.time(msec);
+  double current_space = 144;
+  if (dist_sensor.isObjectDetected()) {
+    current_space = dist_sensor.objectDistance(inches);
+  }
 
-  DEBUG_PRINT(PRINT_LEVEL_NORMAL, "Drive by distance %.2f\n", distance);
+  DEBUG_PRINT(PRINT_LEVEL_NORMAL, "Drive by distance %.2f, current_space %.2f, space %.2f\n", distance, current_space, space);
   // keep turning until we reach desired angle +/- tolerance
-  while ((error > drive_tolerance) || (error < (-1 * drive_tolerance))) {
+  while ((error > drive_tolerance) && (PidDriveTimer.time(msec) < (start_time + time)) && (current_space >= space )) {
     current_rotation = (RightDriveSmart.position(turns) + LeftDriveSmart.position(turns)) / 2;
     error = rotation - current_rotation;
     if (error < 0) {
@@ -278,6 +292,9 @@ long pid_drive(double distance) {
       LeftDriveSmart.spin(reverse, voltage, volt);
     }
     prev_error = error;
+    if (dist_sensor.isObjectDetected()) {
+      current_space = dist_sensor.objectDistance(inches);
+    }
     wait(delay, msec);
     ++loop_count;
   }
@@ -313,6 +330,76 @@ void tune_drive_pid(void)
 
 
 
+////////////////////////DISTANCE_PID_DRIVE////////////
+
+double distance_drive_kp = 3/12.3;
+double distance_drive_ki = 0.0015/12.3;
+double distance_drive_kd = 0.09/12.3;
+double distance_drive_tolerance = 0.5;
+
+
+long distance_pid_drive(double space) {
+  double delay = 20;   // imu can output reading at a rate of 50 hz (20 msec)
+  long loop_count = 0;
+  double error = 5000;
+  double total_error = 0;
+  double derivative = 0;
+  double prev_error = 0;
+  double voltage = 0;
+  double min_volt = 2.5;   // we don't want to apply less than min_volt, or else drivetrain won't move
+  double max_volt = 11.5;  // we don't want to apply more than max volt, or else we may damage motor
+  bool direction = true;
+  //double rotation = distance / (4 * M_PI);
+  //double current_rotation = (RightDriveSmart.position(turns) + LeftDriveSmart.position(turns)) / 2;
+  //rotation += current_rotation;
+  //double start_time = PidDriveTimer.time(msec);
+  double current_space = 144;
+  if (dist_sensor.isObjectDetected()) {
+    current_space = dist_sensor.objectDistance(inches);
+  }
+  DEBUG_PRINT(PRINT_LEVEL_NORMAL, "current_space %.2f, space %.2f\n", current_space, space);
+  // keep turning until we reach desired angle +/- tolerance
+  while (error > distance_drive_tolerance) {
+    //current_rotation = (RightDriveSmart.position(turns) + LeftDriveSmart.position(turns)) / 2;
+    error = current_space - space;
+    if (error < 0) {
+      error = error * -1;
+      direction = false;
+    } else {
+      direction = true;
+    }
+    total_error += error;   // used for integration term
+    derivative = error - prev_error;
+    voltage = distance_drive_kp * error + distance_drive_ki * total_error - distance_drive_kd * derivative;
+    if (voltage < min_volt) {
+        voltage = min_volt;
+      } else if (voltage > max_volt) {
+      voltage = max_volt;
+    }
+    if ((loop_count < 20) && (voltage > min_volt)){
+      voltage = min_volt + ((voltage - min_volt) / 20) * loop_count;
+    }
+    DEBUG_PRINT(PRINT_LEVEL_DEBUG, "error %.2f, voltage %.2f, direction %d, angle %.2f\n", error, voltage, direction, imu.rotation());
+    if (direction) {
+      RightDriveSmart.spin(forward, voltage, volt);
+      LeftDriveSmart.spin(forward, voltage, volt);
+    } else {
+      RightDriveSmart.spin(reverse, voltage, volt);
+      LeftDriveSmart.spin(reverse, voltage, volt);
+    }
+    prev_error = error;
+    current_space = dist_sensor.objectDistance(inches);
+    wait(delay, msec);
+    ++loop_count;
+  }
+  RightDriveSmart.stop();
+  LeftDriveSmart.stop();
+  //DEBUG_PRINT(PRINT_LEVEL_DEBUG, "drive by distance %.2f, loop count %ld\n", distance, loop_count);
+  return loop_count;
+}
+//////////////////////////DISTANCE_PID_DRIVE///////////////////////
+
+
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
 /*                              User Control Text                            */
@@ -325,22 +412,23 @@ void tune_drive_pid(void)
 bool driveforward = false;
 
 
-//drives robot forward
+//drives robot backward
 // rotation: how many turns of the wheel to travel backward
 // power: velocity of wheels in percentage
-void driveBackward(double rotation, double power) {
+void driveBackward(double rotation, double power, int32_t time) {
+  Drivetrain.setTimeout(time, msec);
   Drivetrain.setDriveVelocity(power, percent);
   Drivetrain.driveFor(reverse, rotation, inches);
 }
 
-//drives robot backward
+//drives robot forward
 // rotation: how many turns of the wheel to travel backward
 // power: velocity of wheels in percentage
-void driveForward(double rotation, double power) {
+void driveForward(double rotation, double power, int32_t time) {
+  Drivetrain.setTimeout(time, msec);
   Drivetrain.setDriveVelocity(power, percent);
   Drivetrain.driveFor(forward, rotation, inches);
 }
-
 
 void turnRight(double angle, double power) {
   double start_angle = imu.yaw();
