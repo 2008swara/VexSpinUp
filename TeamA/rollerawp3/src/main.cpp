@@ -58,16 +58,16 @@ void LaunchShoot(void) {
 void TriShoot(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 7, volt);
+  Shooter.spin(forward, 8.1, volt);
   Shooter_pneum.set(false);
-  wait(500, msec);
+  wait(350, msec);
   Shooter_pneum.set(true);
-  wait(100, msec);
-  Shooter.spin(forward, 7, volt);
+  wait(200, msec);
+  Shooter.spin(forward, 8.75, volt);
   Shooter_pneum.set(false);
-  wait(500, msec);
+  wait(350, msec);
   Shooter_pneum.set(true);
-  wait(100, msec);
+  wait(200, msec);
   Shooter_pneum.set(false);
   Shooter.spin(forward, 7, volt);
 }
@@ -97,6 +97,16 @@ void driverev(int deg, int vel) {
   Drivetrain.setDriveVelocity(vel, percent);
   Drivetrain.driveFor(reverse, deg, mm);
 }
+void tdrivefor(double rotation, double power, int32_t time) {
+  Drivetrain.setTimeout(time, msec);
+  Drivetrain.setDriveVelocity(power, percent);
+  Drivetrain.driveFor(forward, rotation, inches);
+}
+void tdriverev(double rotation, double power, int32_t time) {
+  Drivetrain.setTimeout(time, msec);
+  Drivetrain.setDriveVelocity(power, percent);
+  Drivetrain.driveFor(reverse, rotation, inches);
+}
 void driveturnright(int deg) {
   RightDriveSmart.spinFor(forward, deg, degrees, true);
   LeftDriveSmart.spinFor(forward, deg, degrees, true);
@@ -109,17 +119,64 @@ void autonomous(void) {
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
+  
+  // roller 1
+  // shoot 2 preloads
+  // turn & pick up stack of 3
+  // turn & shoot
+  
   Intake.setVelocity(50, percent);
-  Intake.spin(forward);
-  driverev(40, 70);
+  Shooter.spin(forward, 12, voltageUnits::volt);
+  Intake.spin(forward); // roller 1
+  tdriverev(40, 70, 500);
   wait(150, msec);
-  drivefor(135, 70);
-  pid_turn_by(70);
-  drivefor(670, 80);
-  driverev(100, 80);
-  Intake.spin(reverse);
-  pid_turn_by(160);
-  pid_drive(-9);
+  drivefor(150, 70);
+  wait(1.5, sec);
+  pid_turn_by(-10);
+  Shooter_pneum.set(true); // shoot 2 discs
+  wait(100, msec);
+  Shooter.spin(forward, 12, volt);
+  Shooter_pneum.set(false);
+  wait(400, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 12, volt);
+  Shooter_pneum.set(false);
+  Shooter.stop();
+
+  Intake.spin(reverse); // pick up stack of 3 discs
+  pid_turn_by(-130);
+  pid_drive(-20);
+
+  Shooter.spin(forward, 12, volt);
+  pid_turn_by(105);
+  Shooter_pneum.set(true); // shoot 3 discs
+  wait(100, msec);
+  Shooter.spin(forward, 12, volt);
+  Shooter_pneum.set(false);
+  wait(400, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 12, volt);
+  Shooter_pneum.set(false);
+  wait(400, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 12, volt);
+  Shooter_pneum.set(false);
+  Shooter.stop();
+
+  // Intake.setVelocity(50, percent);
+  // Intake.spin(forward);
+  // driverev(40, 70);
+  // wait(150, msec);
+  // drivefor(135, 70);
+  // pid_turn_by(70);
+  // drivefor(670, 80);
+  // driverev(100, 80);
+  // Intake.spin(reverse);
+  // pid_turn_by(160);
+  // pid_drive(-9);
   // drivefor(100, 60);
   // Shooter.spin(forward, 12, voltageUnits::volt);
   // pid_turn_by(120);
@@ -196,8 +253,14 @@ void extShoot(void) {
   String.set(true);
   wait(1, sec);
   String.set(false);
-  wait (1, sec);
+  wait(1, sec);
   String.set(true);
+  wait(1, sec);
+  String.set(false);
+  wait(1, sec);
+  String.set(true);
+  wait(1, sec);
+  String.set(false);
 
 }
 
@@ -209,7 +272,7 @@ void SpinShooter(void) {
   }
   Debounce.reset();
   if (shootspin == false) {
-    Shooter.spin(forward, 6, voltageUnits::volt);
+    Shooter.spin(forward, 7, voltageUnits::volt);
     shootspin = true;
     Intake.stop();
   }
@@ -313,7 +376,7 @@ long pid_drive(double distance, int32_t time, double space) {
   long loop_count = 0;
   double error = 5000;
   double total_error = 0;
-  double derivative = 0;
+  double derivative = 0.1;
   double prev_error = 0;
   double voltage = 0;
   double min_volt = 2.5;   // we don't want to apply less than min_volt, or else drivetrain won't move

@@ -12,12 +12,12 @@ controller Controller;
 
 motor L1 = motor(PORT13, ratio18_1, false); 
 motor L2 = motor(PORT9, ratio18_1, false);
-motor L3 = motor(PORT10, ratio18_1, false);
+motor L3 = motor(PORT10, ratio18_1, true);
 motor_group LeftDriveSmart = motor_group(L1, L2, L3);
 
 motor R1 = motor(PORT12, ratio18_1, true); 
 motor R2 = motor(PORT2, ratio18_1, true);
-motor R3 = motor(PORT1, ratio18_1, true); 
+motor R3 = motor(PORT1, ratio18_1, false); 
 motor_group RightDriveSmart = motor_group(R1, R2, R3);
 
 inertial Inertia = inertial(PORT4);

@@ -56,16 +56,16 @@ void LaunchShoot(void) {
 void TriShoot(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 7, volt);
+  Shooter.spin(forward, 8.1, volt);
   Shooter_pneum.set(false);
-  wait(500, msec);
+  wait(350, msec);
   Shooter_pneum.set(true);
-  wait(100, msec);
-  Shooter.spin(forward, 7, volt);
+  wait(200, msec);
+  Shooter.spin(forward, 8.75, volt);
   Shooter_pneum.set(false);
-  wait(500, msec);
+  wait(350, msec);
   Shooter_pneum.set(true);
-  wait(100, msec);
+  wait(200, msec);
   Shooter_pneum.set(false);
   Shooter.spin(forward, 7, volt);
 }
@@ -86,6 +86,16 @@ void pre_auton(void) {
 /*                                                                           */
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
+void tdrivefor(double rotation, double power, int32_t time) {
+  Drivetrain.setTimeout(time, msec);
+  Drivetrain.setDriveVelocity(power, percent);
+  Drivetrain.driveFor(forward, rotation, inches);
+}
+void tdriverev(double rotation, double power, int32_t time) {
+  Drivetrain.setTimeout(time, msec);
+  Drivetrain.setDriveVelocity(power, percent);
+  Drivetrain.driveFor(reverse, rotation, inches);
+}
 void drivefor(int deg, int vel) {
   Drivetrain.setDriveVelocity(vel, percent);
   Drivetrain.driveFor(forward, deg, mm);
@@ -103,13 +113,58 @@ void driveturnleft(int deg) {
   RightDriveSmart.spinFor(reverse, deg, degrees, true);
 }
 void autonomous(void) {
+
+  // drive to roller 1
+  // roller 1
+  // shoot 2 preloads
+  // turn & drive to pick up row of 3 discs
+  // turn & shoot
+
   Intake.setVelocity(50, percent);
-  pid_drive(-28);
-  pid_turn_by(90);
+  Shooter.spin(forward, 12, voltageUnits::volt);
   Intake.spin(forward);
-  driverev(100, 70);
-  wait(5, msec);
-  drivefor(100, 70);
+
+  pid_drive(-28); // roller 1
+  pid_turn_by(90);
+  tdriverev(6, 70, 1000);
+  wait(150, msec);
+  drivefor(300, 70);
+
+  pid_turn_by(10);
+  Shooter_pneum.set(true); // shoot 2 discs
+  wait(100, msec);
+  Shooter.spin(forward, 12, volt);
+  Shooter_pneum.set(false);
+  wait(400, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 12, volt);
+  Shooter_pneum.set(false);
+  Shooter.stop();
+
+  Intake.spin(reverse); // pick up stack of 3 discs
+  pid_turn_by(130);
+  pid_drive(-26);
+
+  Shooter.spin(forward, 12, volt);
+  pid_turn_by(105);
+  Shooter_pneum.set(true); // shoot 3 discs
+  wait(100, msec);
+  Shooter.spin(forward, 12, volt);
+  Shooter_pneum.set(false);
+  wait(400, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 12, volt);
+  Shooter_pneum.set(false);
+  wait(400, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 12, volt);
+  Shooter_pneum.set(false);
+  Shooter.stop();
+  
+
   // Intake.spin(reverse);
   // Shooter.spin(forward, 12, voltageUnits::volt);
   // pid_turn_by(-84);
@@ -194,8 +249,14 @@ void extShoot(void) {
   String.set(true);
   wait(1, sec);
   String.set(false);
-  wait (1, sec);
+  wait(1, sec);
   String.set(true);
+  wait(1, sec);
+  String.set(false);
+  wait(1, sec);
+  String.set(true);
+  wait(1, sec);
+  String.set(false);
 
 }
 
@@ -206,7 +267,7 @@ void SpinShooter(void) {
   }
   Debounce.reset();
   if (shootspin == false) {
-    Shooter.spin(forward, 6, volt);
+    Shooter.spin(forward, 7, volt);
     shootspin = true;
     Intake.stop();
   }
@@ -311,7 +372,7 @@ long pid_drive(double distance, int32_t time, double space) {
   long loop_count = 0;
   double error = 5000;
   double total_error = 0;
-  double derivative = 0;
+  double derivative = 0.1;
   double prev_error = 0;
   double voltage = 0;
   double min_volt = 2.5;   // we don't want to apply less than min_volt, or else drivetrain won't move
@@ -485,9 +546,9 @@ void usercontrol(void) {
     Controller.ButtonL1.pressed(SpinIntakeForwards);
     Controller.ButtonL2.pressed(SpinIntakeBackwards);
     Controller.ButtonR1.pressed(SpinShooter);
-    Controller.ButtonUp.pressed(TriShoot);
+    Controller.ButtonR2.pressed(TriShoot);
     Controller.ButtonY.pressed(extShoot);
-    Controller.ButtonR2.pressed(LaunchShoot);
+    Controller.ButtonUp.pressed(LaunchShoot);
 
     
 

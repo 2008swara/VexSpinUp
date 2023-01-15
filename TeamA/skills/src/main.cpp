@@ -57,16 +57,16 @@ void LaunchShoot(void) {
 void TriShoot(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 9, volt);
+  Shooter.spin(forward, 8.1, volt);
   Shooter_pneum.set(false);
-  wait(400, msec);
+  wait(350, msec);
   Shooter_pneum.set(true);
-  wait(100, msec);
-  Shooter.spin(forward, 9, volt);
+  wait(200, msec);
+  Shooter.spin(forward, 8.75, volt);
   Shooter_pneum.set(false);
-  wait(400, msec);
+  wait(350, msec);
   Shooter_pneum.set(true);
-  wait(100, msec);
+  wait(200, msec);
   Shooter_pneum.set(false);
   Shooter.spin(forward, 7, volt);
 }
@@ -122,32 +122,137 @@ void autonomous(void) {
   // Insert autonomous user code here.
   // ..........................................................................
 
-  Intake.setVelocity(70, percent);
+  /* roller 1
+  pick up second disc from corner
+  roller 2
+  drive & shoot from centre of tile in front of roller 2
+  turn to pick up row of 3 discs
+  turn to shoot
+  go straight to knock over stack of 3 & pick up discs
+  turn and shoot
+  move to pick up stack of 3 on way to roller 4
+  roller 4
+  turn to do roller 3
+  drive 2 tiles & turn & shoot
+  drive to centre of 4 tiles in roller 3/4 corner
+  turn & expand */
+  
+  Intake.setVelocity(70, percent); // setup that should prob be moved to pre-auton
   Drivetrain.setDriveVelocity(80, percent);
-  Intake.spin(reverse);
-  driverev(90, 50);
+
+  Intake.spin(reverse); // roller 1
+  tdriverev(6, 50, 1000);
   wait(300, msec);
   drivefor(100, 50);
-  pid_turn_by(135);
+
+  pid_turn_by(135); // pick up disc
   pid_drive(-18);
-  pid_turn_by(-40);
+
+  pid_turn_by(-40); // roller 2
+  Shooter.spin(forward, 10, voltageUnits::volt);
+  tdriverev(12, 70, 1300);
+  wait(300, msec);
+
+  pid_drive(6);
+  pid_turn_by(-80);
+  Shooter_pneum.set(true); // shoot 3 discs
+  wait(100, msec);
+  Shooter.spin(forward, 9, volt);
+  Shooter_pneum.set(false);
+  wait(400, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 9, volt);
+  Shooter_pneum.set(false);
+  wait(400, msec);
+  Shooter_pneum.set(true);
+  wait(200, msec);
+  Shooter_pneum.set(false); 
+  Shooter.stop();
+
+  pid_turn_by(-135); // pick up 3 discs
+  pid_drive(-25.5);
+
   Shooter.spin(forward, 8, voltageUnits::volt);
-  tdriverev(12, 60, 1500);
-  Drivetrain.stop();
-  wait(800, msec);
-  pid_drive(5);
   pid_turn_by(90);
-  pid_drive(-20);
-  pid_turn_by(90);
-  tdrivefor(20, 60, 1500);
-  Intake.stop();
-  Inertia.calibrate();
-  while (Inertia.isCalibrating()) {
-    wait(25, msec);
-  }
-  pid_drive(-15);
-  pid_turn_by(90);
-  pid_drive(35);
+  Shooter_pneum.set(true); // shoot 3 discs
+  wait(100, msec);
+  Shooter.spin(forward, 9, volt);
+  Shooter_pneum.set(false);
+  wait(400, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 9, volt);
+  Shooter_pneum.set(false);
+  wait(400, msec);
+  Shooter_pneum.set(true);
+  wait(200, msec);
+  Shooter_pneum.set(false); 
+  Shooter.stop();
+
+  pid_turn_by(-90); // pick up stack of 3 discs
+  pid_drive(-18);
+
+  pid_turn_by(75);
+  Shooter.spin(forward, 9.5, voltageUnits::volt);
+  Shooter_pneum.set(true); // shoot 3 discs
+  wait(100, msec);
+  Shooter.spin(forward, 9.5, volt);
+  Shooter_pneum.set(false);
+  wait(400, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 9.5, volt);
+  Shooter_pneum.set(false);
+  wait(400, msec);
+  Shooter_pneum.set(true);
+  wait(200, msec);
+  Shooter_pneum.set(false); 
+  Shooter.stop();
+  
+  pid_turn_by(-35); // pick up stack of 3
+  pid_drive(24);
+  Intake.spin(forward, 70, percent);
+
+  tdriverev(8, 60, 1500); // roller 4
+  wait(300, msec);
+
+  pid_drive(13);
+  pid_turn_by(-90);
+  tdriverev(13.5, 70, 2000); // roller 3
+  wait(300, msec);
+
+  pid_drive(13); // expansions
+  pid_turn_by(45);
+  extShoot();
+
+
+  // Intake.setVelocity(70, percent);
+  // Drivetrain.setDriveVelocity(80, percent);
+  // Intake.spin(reverse);
+  // driverev(90, 50);
+  // wait(300, msec);
+  // drivefor(100, 50);
+  // pid_turn_by(135);
+  // pid_drive(-18);
+  // pid_turn_by(-40);
+  // Shooter.spin(forward, 8, voltageUnits::volt);
+  // tdriverev(12, 60, 1500);
+  // Drivetrain.stop();
+  // wait(800, msec);
+  // pid_drive(5);
+  // pid_turn_by(90);
+  // pid_drive(-20);
+  // pid_turn_by(90);
+  // tdrivefor(20, 60, 1500);
+  // Intake.stop();
+  // Inertia.calibrate();
+  // while (Inertia.isCalibrating()) {
+  //   wait(25, msec);
+  // }
+  // pid_drive(-15);
+  // pid_turn_by(90);
+  // pid_drive(35);
 
 
   // Intake.spin(reverse);  // pick up disc
@@ -169,66 +274,66 @@ void autonomous(void) {
   // pid_turn_by(-73);
   // pid_drive(55);
   // pid_turn_by(-15);
-  Shooter_pneum.set(true); // shoot 3 discs
-  wait(100, msec);
-  Shooter.spin(forward, 9, volt);
-  Shooter_pneum.set(false);
-  wait(400, msec);
-  Shooter_pneum.set(true);
-  wait(100, msec);
-  Shooter.spin(forward, 9, volt);
-  Shooter_pneum.set(false);
-  wait(400, msec);
-  Shooter_pneum.set(true);
-  wait(200, msec);
-  Shooter_pneum.set(false); 
-  Shooter.stop();
+  // Shooter_pneum.set(true); // shoot 3 discs
+  // wait(100, msec);
+  // Shooter.spin(forward, 9, volt);
+  // Shooter_pneum.set(false);
+  // wait(400, msec);
+  // Shooter_pneum.set(true);
+  // wait(100, msec);
+  // Shooter.spin(forward, 9, volt);
+  // Shooter_pneum.set(false);
+  // wait(400, msec);
+  // Shooter_pneum.set(true);
+  // wait(200, msec);
+  // Shooter_pneum.set(false); 
+  // Shooter.stop();
 
-  pid_turn_by(-5);
-  pid_drive(-40);
-  pid_turn_by(-135);
-  Intake.spin(reverse); // pick up 3 more discs
-  pid_drive(-30);
-  pid_turn_by(135);
-  tdriverev(65, 50, 500);
-  Shooter.spin(forward, 9, voltageUnits::volt);
-  Inertia.calibrate();
-  while(Inertia.isCalibrating()) {
-    wait(25, msec);
-  }
-  Intake.stop();
-  pid_drive(10);
-  pid_turn_by(108);
-  Shooter_pneum.set(true); // shoot 3 discs
-  wait(100, msec);
-  Shooter.spin(forward, 9, volt);
-  Shooter_pneum.set(false);
-  wait(400, msec);
-  Shooter_pneum.set(true);
-  wait(100, msec);
-  Shooter.spin(forward, 8.5, volt);
-  Shooter_pneum.set(false);
-  wait(400, msec);
-  Shooter_pneum.set(true);
-  wait(200, msec);
-  Shooter_pneum.set(false); 
-  Shooter.stop();
+  // pid_turn_by(-5);
+  // pid_drive(-40);
+  // pid_turn_by(-135);
+  // Intake.spin(reverse); // pick up 3 more discs
+  // pid_drive(-30);
+  // pid_turn_by(135);
+  // tdriverev(65, 50, 500);
+  // Shooter.spin(forward, 9, voltageUnits::volt);
+  // Inertia.calibrate();
+  // while(Inertia.isCalibrating()) {
+  //   wait(25, msec);
+  // }
+  // Intake.stop();
+  // pid_drive(10);
+  // pid_turn_by(108);
+  // Shooter_pneum.set(true); // shoot 3 discs
+  // wait(100, msec);
+  // Shooter.spin(forward, 9, volt);
+  // Shooter_pneum.set(false);
+  // wait(400, msec);
+  // Shooter_pneum.set(true);
+  // wait(100, msec);
+  // Shooter.spin(forward, 8.5, volt);
+  // Shooter_pneum.set(false);
+  // wait(400, msec);
+  // Shooter_pneum.set(true);
+  // wait(200, msec);
+  // Shooter_pneum.set(false); 
+  // Shooter.stop();
 
-  Intake.spin(forward);
-  pid_turn_by(-18);
-  pid_drive(-80);
-  pid_turn_by(-90);
-  driverev(150, 60); // third roller
-  wait(350, msec);
-  pid_drive(31.5);
-  pid_turn_by(90);
-  pid_drive(-21); // fourth roller
-  wait(350, msec);
-  pid_drive(12);
-  Intake.stop();
-  pid_turn_by(-45);
-  pid_drive(-5);
-  extShoot(); // string shooter
+  // Intake.spin(forward);
+  // pid_turn_by(-18);
+  // pid_drive(-80);
+  // pid_turn_by(-90);
+  // driverev(150, 60); // third roller
+  // wait(350, msec);
+  // pid_drive(31.5);
+  // pid_turn_by(90);
+  // pid_drive(-21); // fourth roller
+  // wait(350, msec);
+  // pid_drive(12);
+  // Intake.stop();
+  // pid_turn_by(-45);
+  // pid_drive(-5);
+  // extShoot(); // string shooter
   // pick up disc
   // go to goal
   // shoot 3 discs
@@ -290,8 +395,14 @@ void extShoot(void) {
   String.set(true);
   wait(1, sec);
   String.set(false);
-  wait (1, sec);
+  wait(1, sec);
   String.set(true);
+  wait(1, sec);
+  String.set(false);
+  wait(1, sec);
+  String.set(true);
+  wait(1, sec);
+  String.set(false);
 
 }
 
@@ -407,7 +518,7 @@ long pid_drive(double distance, int32_t time, double space) {
   long loop_count = 0;
   double error = 5000;
   double total_error = 0;
-  double derivative = 0;
+  double derivative = 0.1;
   double prev_error = 0;
   double voltage = 0;
   double min_volt = 2.5;   // we don't want to apply less than min_volt, or else drivetrain won't move
