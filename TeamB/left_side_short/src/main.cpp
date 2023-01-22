@@ -111,7 +111,7 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
-  Shooter.spin(forward, 7.5, volt);
+  Shooter.spin(forward, 8, volt); //7.5
   driveBackward(3.5, 45, 1000);
   Intake.spin(forward, 100, percent); //does rollers
   wait(350, msec);
@@ -125,7 +125,7 @@ void autonomous(void) {
   //pid_turn_by(-90);
   //pid_drive(-15);
   pid_drive(-1); //-1.5
-  pid_turn_by(94.5); //turn to shooting position
+  pid_turn_by(96.5); //turn to shooting position //94.5
   wait(1, sec);
   pid_drive(7);
   Shooter_pneum.set(true); //shoots first

@@ -37,7 +37,7 @@ long distance_pid_drive(double space);
 #define PRINT_LEVEL_NORMAL 1
 #define PRINT_LEVEL_DEBUG 2
 
-#define DEBUG_LEVEL PRINT_LEVEL_DEBUG
+#define DEBUG_LEVEL PRINT_LEVEL_NORMAL
 
 #define DEBUG_PRINT(dl, fmt, args...) {if (dl <= DEBUG_LEVEL) printf(fmt, ## args);}
 
@@ -61,7 +61,7 @@ void LaunchShoot(void) {
   //   cur_time = testtimer.time();
   //   if (cur_time > prev_time) {
   //     // printf("%lu,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", 
-  //     // cur_time, Shooter.velocity(pct), Shooter.current(pct), 
+  //     // cur_time, Shooter.velocity(pct), Shooter.current(pct),
   //     // Shooter.voltage(volt), Shooter.power(watt), Shooter.torque(Nm), 
   //     // Shooter.efficiency(pct), Shooter.temperature(fahrenheit));
   //     printf("%lu,%.2f,%.2f\n", 
@@ -72,19 +72,36 @@ void LaunchShoot(void) {
 
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 10, volt);
+  Shooter.spin(reverse, 10, volt);
   Shooter_pneum.set(false);
   wait(350, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 10, volt);
+  Shooter.spin(reverse, 10, volt);
   Shooter_pneum.set(false);
   wait(350, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter_pneum.set(false);
-  Shooter.spin(forward, 7, volt);
+  Shooter.spin(reverse, 7, volt);
 }
+
+void LaunchShootFar(void) {
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(reverse, 11, volt);
+  Shooter_pneum.set(false);
+  wait(700, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(reverse, 11, volt);
+  Shooter_pneum.set(false);
+  wait(700, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter_pneum.set(false);
+}
+
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
@@ -113,26 +130,35 @@ void pre_auton(void) {
 
 void autonomous(void) {
   pid_drive(-6);
-  pid_turn_by(-90);
+  pid_turn_by(-90); 
   pid_drive(-24);
   pid_turn_by(-90);
-  driveBackward(6, 45, 1000); //goes back into rollers
+  driveBackward(4.5, 45, 600); //goes back into rollers
   //pid_drive(-3.5);
   Intake.spin(reverse, 100, percent);
   wait(300, msec); //rollers done
   pid_drive(4.5); //goes away from rollers
-  pid_turn_by(128); //135
+  pid_turn_by(140); //135
   pid_drive(-21); //picks up disc //-20.5
   wait(1, sec);
-  pid_turn_by(-33); //-41
+
+  Shooter.spin(reverse, 9.25, volt);
+
+  pid_turn_by(-45); //-41
   Intake.stop();
   driveBackward(12, 30, 1500); //goes back into rollers
   Intake.spin(reverse, 100, percent);
   wait(350, msec); //rollers done
   Intake.stop();
-  Shooter.spin(forward, 7, volt); //shooter starts
+  //Shooter.spin(reverse, 7, volt); //shooter starts
   pid_drive(4); //goes away from rollers
-  pid_turn_by(-87);
+  pid_turn_by(-90);
+  distance_pid_drive(72);
+  pid_turn_by(-5);
+  LaunchShootFar();
+  return;
+
+
   pid_drive(37); //drives toward goal
   pid_turn_by(-90); //turns to wall
   driveForward(14, 80, 800); //drives shooter side into wall
@@ -165,7 +191,7 @@ void autonomous(void) {
   pid_turn_by(-135); //turns to pick up 3 in a row discs
   Intake.spin(reverse,100, percent);
   pid_drive(-46); //picks up discs
-  Shooter.spin(forward, 7 , volt);
+  Shooter.spin(reverse, 7 , volt);
   pid_drive(-25); //still picking up discs/driving to position
   Intake.stop();
   pid_turn_by(140); //turn straight
@@ -203,7 +229,7 @@ void autonomous(void) {
 }
 
 double turn_kp = 0.1; //1.5
-double turn_ki = 0.0004; //0.0009
+double turn_ki = 0.0002; //0.0009
 double turn_kd = 0;
 double turn_tolerance = 0.2;    // we want to stop when we reach the desired angle +/- 1 degree
 
@@ -564,8 +590,8 @@ void SpinIntakeBackwards(void){
   DebounceTimer.reset();
   if (spin2 == false){
     Intake.spin(reverse, 100, percent);
-    Shooter.stop();
-    shootspin = false;
+    //Shooter.stop();
+   // shootspin = false;
     spin2 = true;
   }
   else {
@@ -644,7 +670,7 @@ void SpinShooter(void) {
   }
   DebounceTimer.reset();
   if (shootspin == false) {
-    Shooter.spin(forward, 7, volt);
+    Shooter.spin(reverse, 7, volt);
 //    Shooter.spin(forward, 50, percent);
     Intake.stop();
     spin2 = false;

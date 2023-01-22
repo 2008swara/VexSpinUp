@@ -41,7 +41,6 @@ long distance_pid_drive(double space);
 
 #define DEBUG_PRINT(dl, fmt, args...) {if (dl <= DEBUG_LEVEL) printf(fmt, ## args);}
 
-
 // define your global instances of motors and other devices here
 
 /*---------------------------------------------------------------------------*/
@@ -62,7 +61,7 @@ void LaunchShoot(void) {
   //   cur_time = testtimer.time();
   //   if (cur_time > prev_time) {
   //     // printf("%lu,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", 
-  //     // cur_time, Shooter.velocity(pct), Shooter.current(pct), 
+  //     // cur_time, Shooter.velocity(pct), Shooter.current(pct),
   //     // Shooter.voltage(volt), Shooter.power(watt), Shooter.torque(Nm), 
   //     // Shooter.efficiency(pct), Shooter.temperature(fahrenheit));
   //     printf("%lu,%.2f,%.2f\n", 
@@ -73,18 +72,18 @@ void LaunchShoot(void) {
 
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 10, volt);
+  Shooter.spin(reverse, 10, volt);
   Shooter_pneum.set(false);
   wait(350, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 10, volt);
+  Shooter.spin(reverse, 10, volt);
   Shooter_pneum.set(false);
   wait(350, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter_pneum.set(false);
-  Shooter.spin(forward, 7, volt);
+  Shooter.spin(reverse, 7, volt);
 }
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
@@ -102,7 +101,7 @@ void pre_auton(void) {
 
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
-/*                              Autonomous Task                              */
+/*                              Autonomous Task                   s           */
 /*                                                                           */
 /*  This task is used to control your robot during the autonomous phase of   */
 /*  a VEX Competition.                                                       */
@@ -110,47 +109,97 @@ void pre_auton(void) {
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
 
+
+
 void autonomous(void) {
-  pid_drive(-25);
-  Shooter.spin(forward, 8.5, volt); //start shooter early to save time - 8
-  pid_turn_by(90);
-  // turn right = 90, 30
-  driveBackward(5, 45, 1000);
-  Intake.spin(forward, 100, percent); //doing rollers
-  wait(375, msec);
-  Intake.stop(); //rollers done
-  pid_drive(3);
+  pid_drive(-6);
   pid_turn_by(-90); 
-  // turn left = 80, 20
-  //driveForward(25, 60);
-  pid_drive(25);
-  Intake.spin(reverse, 100, percent); //turn on intake for disc
-  pid_turn_by(-96);
-  //pid_turn_by(-20);
-  //driveBackward(23, 60);
-  pid_drive(-23);//intake disc
-  //wait(1, sec);
-  //Intake.stop();
-  //Intake.stop();
-  //driveBackward(6, 45);
-  //pid_drive(-6);
-  pid_turn_by(-158); //turn to shooting position
-  //pid_turn_by(-70);
-  //wait(2, sec);
-  Shooter_pneum.set(true); //shoots first
-  wait(100, msec);
-  Shooter_pneum.set(false);
-  Shooter.spin(forward, 11, volt);
-  wait(600, msec);
-  Shooter_pneum.set(true); //shoots second
-  wait(100, msec);
-  Shooter_pneum.set(false);
-  Shooter.spin(forward, 11, volt);
-  wait(600, msec);
-  Shooter_pneum.set(true); //shoots third
-  wait(100, msec);
-  Shooter_pneum.set(false);
+  pid_drive(-24);
+  pid_turn_by(-90);
+  driveBackward(6, 45, 1000); //goes back into rollers
+  //pid_drive(-3.5);
+  Intake.spin(reverse, 100, percent);
+  wait(300, msec); //rollers done
+  pid_drive(4.5); //goes away from rollers
+  pid_turn_by(128); //135
+  pid_drive(-21); //picks up disc //-20.5
+  wait(1, sec);
+  pid_turn_by(-33); //-41
+  Intake.stop();
+  driveBackward(12, 30, 1500); //goes back into rollers
+  Intake.spin(reverse, 100, percent);
+  wait(350, msec); //rollers done
+  Intake.stop();
+  Shooter.spin(reverse, 7, volt); //shooter starts
+  pid_drive(4); //goes away from rollers
+  pid_turn_by(-87);
+  pid_drive(37); //drives toward goal
+  pid_turn_by(-90); //turns to wall
+  driveForward(14, 80, 800); //drives shooter side into wall
+  imu.calibrate(); //calibrates
+  while (imu.isCalibrating()) {
+    wait(25, msec);
+  }
+  pid_drive(-5); //goes back
+  pid_turn_by(87); //turns to shoot
+  //pid_turn_by(-6); //turns 
+  distance_pid_drive(52); //drives closer to goal to shoot 
+  //pid_turn_by(-1);
+  LaunchShoot(); //shoots first 3 discs
   Shooter.stop();
+  //pid_turn_by(1);
+  //below this is test code for calibrating after second shoot
+  /*pid_drive(-35);
+  pid_turn_by(-90);
+  driveForward(14, 60, 1000);
+  imu.calibrate(); //calibrates
+  while (imu.isCalibrating()) {
+    wait(25, msec);
+  }
+  pid_drive(-17); //-15
+  Intake.spin(reverse, 100, percent);
+  pid_turn_by(-42);
+  pid_drive(-6);
+  pid_turn_by(-6); //corrects for angled shooting */
+  pid_drive(-43);
+  pid_turn_by(-135); //turns to pick up 3 in a row discs
+  Intake.spin(reverse,100, percent);
+  pid_drive(-46); //picks up discs
+  Shooter.spin(reverse, 7 , volt);
+  pid_drive(-25); //still picking up discs/driving to position
+  Intake.stop();
+  pid_turn_by(140); //turn straight
+  pid_drive(20);
+  driveForward(30, 80, 1000); //drives shooter side into wall
+  imu.calibrate(); //calibrates
+  while (imu.isCalibrating()) {
+    wait(25, msec);
+  }
+  pid_drive(-6.5); //goes back
+  pid_turn_by(-90);
+  //pid_drive(15, 3000);
+  distance_pid_drive(52);
+  pid_turn_by(-16);
+  LaunchShoot();
+  pid_turn_by(16);
+  pid_drive(-51);
+  pid_turn_by(-90);
+  pid_drive(-10, 1000);
+  Intake.spin(reverse, 100, percent);
+  wait(300, msec);
+  pid_drive(10);
+  Intake.stop();
+  pid_turn_by(135);
+  pid_drive(-15);
+  pid_turn_by(-47);
+  pid_drive(-24, 2000);
+  Intake.spin(reverse, 100, percent);
+  wait(300, msec);
+  Intake.stop();
+  pid_drive(16);
+  pid_turn_by(-45);
+  pid_drive(-6);
+  extShoot();
 }
 
 double turn_kp = 0.1; //1.5
@@ -236,7 +285,7 @@ void tune_turn_pid(void)
 
 ////////////////////////////////////DRIVE_PID////////////////////////////////////////
 
-double drive_kp = 4.2; //3
+double drive_kp = 3;
 double drive_ki = 0.0015;
 double drive_kd = 0.09;
 double drive_tolerance = 0.1;    // we want to stop when we reach the desired angle +/- 1 degree
@@ -430,6 +479,7 @@ void driveForward(double rotation, double power, int32_t time) {
   Drivetrain.driveFor(forward, rotation, inches);
 }
 
+
 void turnRight(double angle, double power) {
   double start_angle = imu.yaw();
   angle = angle - (angle - start_angle) * 0.1;
@@ -514,8 +564,8 @@ void SpinIntakeBackwards(void){
   DebounceTimer.reset();
   if (spin2 == false){
     Intake.spin(reverse, 100, percent);
-    Shooter.stop();
-    shootspin = false;
+    //Shooter.stop();
+   // shootspin = false;
     spin2 = true;
   }
   else {
@@ -594,7 +644,7 @@ void SpinShooter(void) {
   }
   DebounceTimer.reset();
   if (shootspin == false) {
-    Shooter.spin(forward, 7, volt);
+    Shooter.spin(reverse, 7, volt);
 //    Shooter.spin(forward, 50, percent);
     Intake.stop();
     spin2 = false;
