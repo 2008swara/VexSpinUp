@@ -32,7 +32,14 @@ long pid_turn_by(double angle);
 long pid_drive(double distance, int32_t time=60000, double space=0);
 void extShoot(void);
 void driveBackwardTime(double time, double power);
+void SpinIntakeBackwards(void);
 long distance_pid_drive(double space);
+
+
+bool spin1 = false;
+bool shootspin = false;
+
+
 #define PRINT_LEVEL_MUST 0
 #define PRINT_LEVEL_NORMAL 1
 #define PRINT_LEVEL_DEBUG 2
@@ -73,18 +80,19 @@ void LaunchShoot(void) {
 
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 10, volt);
+  Shooter.spin(forward, 10.5, volt);
   Shooter_pneum.set(false);
-  wait(350, msec);
+  wait(300, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 10, volt);
+  Shooter.spin(forward, 10.5, volt);
   Shooter_pneum.set(false);
-  wait(350, msec);
+  wait(300, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter_pneum.set(false);
-  Shooter.spin(forward, 7, volt);
+  Shooter.stop();
+  shootspin = false;
 }
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
@@ -488,8 +496,6 @@ void rightdrivesmart(void){
 
 */
 
-bool spin1 = false;
-bool shootspin = false;
 void SpinIntakeForwards(void){
   if (DebounceTimer.value() < 0.1) {
     return;
@@ -614,11 +620,19 @@ void ShootOnce(void) {
   Shooter_pneum.set(false);
 }
 
+void ShooterReverse(void) {
+  if (DebounceTimer.value() < 0.1) {
+    return;
+  }
+  DebounceTimer.reset();
+  Shooter.spin(reverse, 11, volt);
+}
+
 void usercontrol(void) {
   // User control code here, inside the loop
 
   double turnImportance = 1;
-  double speed_ratio = (9.0 / 5.0);
+  double speed_ratio = (11.0 / 5.0);
   //tune_turn_pid();
   while (1) {
 
@@ -652,6 +666,7 @@ void usercontrol(void) {
     Controller.ButtonB.pressed(RollerSpinBackwards);
 
     Controller.ButtonUp.pressed(ShootOnce);
+    Controller.ButtonDown.pressed(ShooterReverse);
 
 
     // This is the main execution loop for the user control program.

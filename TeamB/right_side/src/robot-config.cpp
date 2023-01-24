@@ -24,7 +24,7 @@ int wheelTravel = 4 * M_PI;
 
 drivetrain Drivetrain = drivetrain(LeftDriveSmart, RightDriveSmart, wheelTravel, 13.5, 18, inches, 1);
 
-motor Shooter = motor(PORT19, ratio6_1, false);
+motor Shooter = motor(PORT19, ratio6_1, true);
 motor Intake = motor(PORT20, ratio18_1, false);
 digital_out Shooter_pneum = digital_out(Brain.ThreeWirePort.A);
 digital_out String = digital_out(Brain.ThreeWirePort.B);
