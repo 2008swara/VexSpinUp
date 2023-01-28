@@ -636,13 +636,13 @@ void RollerAuto(void) {
   opt_sensor.objectDetectThreshold(253);
   opt_sensor.setLight(ledState :: on);
   double hue_val = opt_sensor.hue();
-  Intake.spin(reverse, 100, percent);
+  Intake.spin(reverse, 70, percent);
   printf("Installed: %d, hue %.2f, detected %d\n", opt_sensor.installed(), hue_val,
     opt_sensor.isNearObject());
   while (hue_val < 345) {
     //340 or higher means red - while less than that - will keep spinning
     //250 or lower means blue
-    Intake.spin(reverse, 100, percent);
+    Intake.spin(reverse, 70, percent);
     hue_val = opt_sensor.hue();
 //    printf("Installed: %d, hue %.2f, detected %d\n", opt_sensor.installed(), hue_val,
 //      opt_sensor.isNearObject());
