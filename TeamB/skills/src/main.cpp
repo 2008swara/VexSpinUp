@@ -52,6 +52,33 @@ long distance_pid_drive(double space);
 /*  function is only called once after the V5 has been powered on and        */
 /*  not every time that the robot is disabled.                               */
 /*---------------------------------------------------------------------------*/
+void RollerAuto(void) {
+  if (DebounceTimer.value() < 0.1) {
+    return;
+  }
+  DebounceTimer.reset();
+    opt_sensor.objectDetectThreshold(253);
+    opt_sensor.setLight(ledState :: on);
+    double hue_val = opt_sensor.hue();
+    Intake.spin(reverse, 50, percent);
+    printf("Installed: %d, hue %.2f, detected %d\n", opt_sensor.installed(), hue_val,
+    opt_sensor.isNearObject());
+    while ((hue_val < 320) && (hue_val > 45)) {
+      //red is about 320 to 45 on vex color wheel
+      //340 or higher means red - while less than that - will keep spinning
+      //250 or lower means blue
+      Intake.spin(reverse, 50, percent);
+      hue_val = opt_sensor.hue();
+      Controller.Screen.clearScreen();
+      Controller.Screen.print("%.2f\n", hue_val);
+    
+      printf("Installed: %d, hue %.2f, detected %d\n", opt_sensor.installed(), hue_val,
+      opt_sensor.isNearObject());
+     }
+  Intake.stop();
+  opt_sensor.setLight(ledState :: off);
+}
+
 
 void LaunchShoot(void) {
   // uint32_t prev_time = 0;
@@ -89,12 +116,12 @@ void LaunchShoot(void) {
 void LaunchShootFar(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(reverse, 11, volt);
+  Shooter.spin(reverse, 8.5, volt);
   Shooter_pneum.set(false);
   wait(700, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(reverse, 11, volt);
+  Shooter.spin(reverse, 8.5, volt);
   Shooter_pneum.set(false);
   wait(700, msec);
   Shooter_pneum.set(true);
@@ -102,14 +129,17 @@ void LaunchShootFar(void) {
   Shooter_pneum.set(false);
 }
 
+
+
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
   Drivetrain.setDriveVelocity(80, percent);
   imu.calibrate();
   while (imu.isCalibrating()) {
-    wait(25, msec);
+    wait(50, msec);
   }
+  Intake.setStopping(hold);
   RightDriveSmart.setStopping(hold);
   LeftDriveSmart.setStopping(hold);
   // All activities that occur before the competition starts
@@ -131,33 +161,67 @@ void pre_auton(void) {
 void autonomous(void) {
   pid_drive(-6);
   pid_turn_by(-90); 
-  pid_drive(-24);
-  pid_turn_by(-90);
-  driveBackward(4.5, 45, 600); //goes back into rollers
-  //pid_drive(-3.5);
-  Intake.spin(reverse, 100, percent);
-  wait(300, msec); //rollers done
+  pid_drive(-22);
+  pid_turn_by(-91);
+  driveBackward(4.5, 45, 400); //goes back into rollers
+  RollerAuto();
+  //wait(300, msec); //rollers done
   pid_drive(4.5); //goes away from rollers
-  pid_turn_by(140); //135
-  pid_drive(-21); //picks up disc //-20.5
+  Intake.spin(reverse, 100, percent);
+  pid_turn_by(142); //135
+  pid_drive(-22); //picks up disc //-20.5
   wait(1, sec);
 
-  Shooter.spin(reverse, 9.25, volt);
+  Shooter.spin(reverse, 7, volt); //9.25
 
-  pid_turn_by(-45); //-41
+  pid_turn_by(-55); //-41
   Intake.stop();
   driveBackward(12, 30, 1500); //goes back into rollers
-  Intake.spin(reverse, 100, percent);
-  wait(350, msec); //rollers done
-  Intake.stop();
+  RollerAuto();
+  //Intake.spin(reverse, 100, percent);
+  //wait(350, msec); //rollers done
+  //Intake.stop();
   //Shooter.spin(reverse, 7, volt); //shooter starts
   pid_drive(4); //goes away from rollers
   pid_turn_by(-90);
   distance_pid_drive(72);
-  pid_turn_by(-5);
+  LaunchShootFar(); //first shot
+  Shooter.stop();
+  pid_drive(-5);
+  Intake.spin(reverse, 100, percent);
+  pid_turn_by(-90);
+  pid_drive(-25); //-20 
+  pid_turn_by(-47);
+  pid_drive(-35);
+  Shooter.spin(reverse, 7, volt);
+  pid_turn_by(83);
+  driveForward(6, 50, 500);
+  wait(200, msec);
+  LaunchShootFar(); //second shot
+  pid_drive(-10);
+  pid_turn_by(-85);
+ // Intake.spin(reverse, 100, percent);
+  pid_drive(-35);
+  Intake.spin(reverse, 100, percent);
+  pid_drive(-5);
+  pid_turn_by(45);
+  Shooter.spin(reverse, 7, volt);
+  pid_drive(15);
+  Intake.stop();
+  LaunchShootFar();
+  pid_drive(-20);
+  pid_turn_by(30);
+  Intake.spin(reverse, 100, percent);
+  pid_turn_by(30);
+  pid_drive(30);
+  Intake.stop();
+  pid_turn_by(-30);
+  pid_drive(-30);
+  pid_turn_by(-20);
+  Shooter.spin(reverse, 7, volt);
+  pid_drive(30);
   LaunchShootFar();
   return;
-
 
   pid_drive(37); //drives toward goal
   pid_turn_by(-90); //turns to wall
@@ -690,6 +754,8 @@ void ShootOnce(void) {
   Shooter_pneum.set(false);
 }
 
+
+
 void usercontrol(void) {
   // User control code here, inside the loop
 
@@ -728,6 +794,7 @@ void usercontrol(void) {
     Controller.ButtonB.pressed(RollerSpinBackwards);
 
     Controller.ButtonUp.pressed(ShootOnce);
+    Controller.ButtonA.pressed(RollerAuto);
 
 
     // This is the main execution loop for the user control program.
