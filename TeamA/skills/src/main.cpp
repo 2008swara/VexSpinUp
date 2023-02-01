@@ -48,6 +48,31 @@ long distance_pid_drive(double space);
 /*  not every time that the robot is disabled.                               */
 /*---------------------------------------------------------------------------*/
 
+void red_roller(void) {
+  colour_sensor.setLight(ledState :: on);
+  double hue = colour_sensor.hue();
+  Intake.setVelocity(70, percent);
+  while (hue > 45  && hue < 345) {
+      Intake.spin(forward);
+      hue = colour_sensor.hue();
+      //printf("hue %.2f\n", hue);
+  }
+  colour_sensor.setLight(ledState :: off);
+  Intake.stop();
+}
+
+void blue_roller(void) {
+  colour_sensor.setLight(ledState :: on);
+  double hue = colour_sensor.hue();
+  printf("%.2f\n", hue);
+  Intake.setVelocity(70, percent);
+  Intake.spin(forward);
+  while (hue > 260 || hue < 130) {
+      hue = colour_sensor.hue();
+  }
+  colour_sensor.setLight(ledState :: off);
+  Intake.stop();
+}
 void LaunchShoot(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
@@ -75,6 +100,11 @@ void pre_auton(void) {
   vexcodeInit();
   Drivetrain.setDriveVelocity(80, percent);
   Intake.setVelocity(80, percent);
+  Inertia.calibrate();
+  while (Inertia.isCalibrating()) {
+    wait(25, msec);
+  }
+  Drivetrain.setStopping(hold);
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
 }
@@ -137,82 +167,123 @@ void autonomous(void) {
   drive to centre of 4 tiles in roller 3/4 corner
   turn & expand */
   
-  Intake.setVelocity(70, percent); // setup that should prob be moved to pre-auton
+   // setup that should prob be moved to pre-auton
   Drivetrain.setDriveVelocity(80, percent);
-
-  Intake.spin(reverse); // roller 1
-  tdriverev(6, 50, 1000);
-  wait(300, msec);
-  drivefor(100, 50);
-
-  pid_turn_by(135); // pick up disc
-  pid_drive(-18);
-
-  pid_turn_by(-40); // roller 2
-  Shooter.spin(forward, 10, voltageUnits::volt);
-  tdriverev(12, 70, 1300);
-  wait(300, msec);
-
-  pid_drive(6);
-  pid_turn_by(-80);
-  Shooter_pneum.set(true); // shoot 3 discs
-  wait(100, msec);
-  Shooter.spin(forward, 9, volt);
-  Shooter_pneum.set(false);
-  wait(400, msec);
-  Shooter_pneum.set(true);
-  wait(100, msec);
-  Shooter.spin(forward, 9, volt);
-  Shooter_pneum.set(false);
-  wait(400, msec);
-  Shooter_pneum.set(true);
-  wait(200, msec);
-  Shooter_pneum.set(false); 
-  Shooter.stop();
-
-  pid_turn_by(-135); // pick up 3 discs
-  pid_drive(-25.5);
-
-  Shooter.spin(forward, 8, voltageUnits::volt);
+  // roller 1
+  pid_drive(-6);
   pid_turn_by(90);
+  pid_drive(27);
+  pid_turn_by(90);
+  tdriverev(2, 50, 400);
+  red_roller();
+  drivefor(100, 50);
+  Intake.setVelocity(70, percent);
+  Intake.spin(reverse);
+  pid_turn_by(143); // pick up disc
+  pid_drive(-16.5);
+
+  pid_turn_by(-55); // roller 2
+  tdriverev(9.5, 70, 1000);
+  red_roller();
+
+  pid_drive(4); // 18
+  Shooter.spin(forward, 8, voltageUnits::volt);
+  pid_turn_by(-88); // -90
+  wait(1200, msec);
+  pid_drive(10);
   Shooter_pneum.set(true); // shoot 3 discs
   wait(100, msec);
-  Shooter.spin(forward, 9, volt);
+  Shooter.spin(forward, 8.7, volt);
   Shooter_pneum.set(false);
-  wait(400, msec);
+  wait(1200, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 9, volt);
+  Shooter.spin(forward, 8.7, volt);
   Shooter_pneum.set(false);
-  wait(400, msec);
+  wait(1200, msec);
   Shooter_pneum.set(true);
   wait(200, msec);
   Shooter_pneum.set(false); 
   Shooter.stop();
+  Intake.stop();
+  
+  wait(1.5, sec);
+
+  pid_turn_by(-135); // pick up row of 3 discs
+  Intake.spin(reverse);
+  driverev(150, 50);
+  pid_drive(-8);
+  pid_drive(5);
+  pid_drive(-40);
+
+  pid_turn_by(90);
+  Shooter.spin(forward, 7, voltageUnits::volt);
+  Intake.spin(forward);
+  wait(3, sec);
+  Shooter_pneum.set(true); // shoot 3 discs
+  wait(100, msec);
+  Shooter.spin(forward, 7.5, volt);
+  Shooter_pneum.set(false);
+  wait(1200, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 7.5, volt);
+  Shooter_pneum.set(false);
+  wait(1200, msec);
+  Shooter_pneum.set(true);
+  wait(200, msec);
+  Shooter_pneum.set(false); 
+  Shooter.stop();
+  Intake.stop();
 
   pid_turn_by(-90); // pick up stack of 3 discs
+  pid_drive(-15);
+  pid_drive(5);
+  Intake.spin(reverse);
   pid_drive(-18);
-
-  pid_turn_by(75);
-  Shooter.spin(forward, 9.5, voltageUnits::volt);
+  wait(0.2, sec);
+  pid_drive(-15);
+  pid_turn_by(165);
+  Shooter.spin(forward, 8.1, voltageUnits::volt);
   Shooter_pneum.set(true); // shoot 3 discs
+  Intake.spin(forward);
   wait(100, msec);
-  Shooter.spin(forward, 9.5, volt);
+  Shooter.spin(forward, 8.5, volt);
   Shooter_pneum.set(false);
-  wait(400, msec);
+  wait(1200, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 9.5, volt);
+  Shooter.spin(forward, 8.5, volt);
   Shooter_pneum.set(false);
-  wait(400, msec);
+  wait(1200, msec);
   Shooter_pneum.set(true);
   wait(200, msec);
   Shooter_pneum.set(false); 
   Shooter.stop();
-  
-  pid_turn_by(-35); // pick up stack of 3
-  pid_drive(24);
-  Intake.spin(forward, 70, percent);
+  Intake.spin(reverse);
+  pid_turn_by(135); // pick 3 discs
+  pid_drive(-40);
+
+  pid_turn_by(-60);
+  Shooter.spin(forward, 8.2, voltageUnits::volt);
+  wait(2, sec);
+  Shooter_pneum.set(true); // shoot 3 discs
+  wait(100, msec);
+  Shooter.spin(forward, 8.7, volt);
+  Shooter_pneum.set(false);
+  wait(1200, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 8.7, volt);
+  Shooter_pneum.set(false);
+  wait(1200, msec);
+  Shooter_pneum.set(true);
+  wait(200, msec);
+  Shooter_pneum.set(false); 
+  Shooter.stop();
+
+  // pick up stack of 3
+  // shoot 3
 
   tdriverev(8, 60, 1500); // roller 4
   wait(300, msec);
@@ -363,7 +434,7 @@ void SpinIntakeForwards(void){
   }
   Debounce.reset();
   if (spin1 == false){
-    Intake.spin(forward, 100, percent);
+    Intake.spin(forward, 80, percent);
     spin1 = true;
   }
   else {
@@ -381,7 +452,7 @@ void SpinIntakeBackwards(void){
   }
   Debounce.reset();
   if (spin2 == false){
-    Intake.spin(reverse, 100, percent);
+    Intake.spin(reverse, 80, percent);
     spin2 = true;
   }
   else {
@@ -694,7 +765,8 @@ void usercontrol(void) {
     Controller.ButtonR2.pressed(TriShoot);
     Controller.ButtonY.pressed(extShoot);
     Controller.ButtonUp.pressed(LaunchShoot);
-    Controller.ButtonRight.pressed(turn_135);
+    Controller.ButtonRight.pressed(blue_roller);
+    Controller.ButtonLeft.pressed(red_roller);
     
 
 
