@@ -600,7 +600,7 @@ void SpinShooter(void) {
   }
   DebounceTimer.reset();
   if (shootspin == false) {
-    Shooter.spin(forward, 7, volt);
+    Shooter.spin(forward, 6.75, volt); //7
 //    Shooter.spin(forward, 50, percent);
     Intake.stop();
     spin2 = false;

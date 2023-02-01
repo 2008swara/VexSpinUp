@@ -69,8 +69,6 @@ void RollerAuto(void) {
       //250 or lower means blue
       Intake.spin(reverse, 50, percent);
       hue_val = opt_sensor.hue();
-      Controller.Screen.clearScreen();
-      Controller.Screen.print("%.2f\n", hue_val);
     
       printf("Installed: %d, hue %.2f, detected %d\n", opt_sensor.installed(), hue_val,
       opt_sensor.isNearObject());
@@ -163,7 +161,7 @@ void autonomous(void) {
   pid_turn_by(-90); 
   pid_drive(-22);
   pid_turn_by(-91);
-  driveBackward(4.5, 45, 400); //goes back into rollers
+  driveBackward(6, 30, 600); //goes back into rollers 4.5, 400
   RollerAuto();
   //wait(300, msec); //rollers done
   pid_drive(4.5); //goes away from rollers
@@ -172,7 +170,7 @@ void autonomous(void) {
   pid_drive(-22); //picks up disc //-20.5
   wait(1, sec);
 
-  Shooter.spin(reverse, 7, volt); //9.25
+  Shooter.spin(reverse, 7.5, volt); //9.25
 
   pid_turn_by(-55); //-41
   Intake.stop();
@@ -183,7 +181,7 @@ void autonomous(void) {
   //Intake.stop();
   //Shooter.spin(reverse, 7, volt); //shooter starts
   pid_drive(4); //goes away from rollers
-  pid_turn_by(-90);
+  pid_turn_by(-90.6);
   distance_pid_drive(72);
   LaunchShootFar(); //first shot
   Shooter.stop();
