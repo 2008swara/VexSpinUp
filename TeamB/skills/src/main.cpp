@@ -114,14 +114,14 @@ void LaunchShoot(void) {
 void LaunchShootFar(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(reverse, 8.5, volt);
+  Shooter.spin(reverse, 10, volt);
   Shooter_pneum.set(false);
-  wait(700, msec);
+  wait(400, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(reverse, 8.5, volt);
+  Shooter.spin(reverse, 10, volt);
   Shooter_pneum.set(false);
-  wait(700, msec);
+  wait(400, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter_pneum.set(false);
@@ -157,22 +157,22 @@ void pre_auton(void) {
 
 
 void autonomous(void) {
-  pid_drive(-6);
+  pid_drive(-4);
   pid_turn_by(-90); 
   pid_drive(-22);
-  pid_turn_by(-91);
-  driveBackward(6, 30, 600); //goes back into rollers 4.5, 400
+  pid_turn_by(-90);
+  driveBackward(8, 30, 1000); //goes back into rollers 4.5, 400
   RollerAuto();
   //wait(300, msec); //rollers done
   pid_drive(4.5); //goes away from rollers
   Intake.spin(reverse, 100, percent);
-  pid_turn_by(142); //135
+  pid_turn_by(141); //135
   pid_drive(-22); //picks up disc //-20.5
   wait(1, sec);
 
-  Shooter.spin(reverse, 7.5, volt); //9.25
+  Shooter.spin(reverse, 7, volt); //9.25
 
-  pid_turn_by(-55); //-41
+  pid_turn_by(-51); //-41
   Intake.stop();
   driveBackward(12, 30, 1500); //goes back into rollers
   RollerAuto();
@@ -188,18 +188,18 @@ void autonomous(void) {
   pid_drive(-5);
   Intake.spin(reverse, 100, percent);
   pid_turn_by(-90);
-  pid_drive(-25); //-20 
-  pid_turn_by(-47);
-  pid_drive(-35);
+  pid_drive(-26); //-20 
+  pid_turn_by(-45);
+  pid_drive(-35); //THIS IS PICKING UP TOO FAST - GETS STUCK
   Shooter.spin(reverse, 7, volt);
-  pid_turn_by(83);
-  driveForward(6, 50, 500);
+  pid_turn_by(81); //83
+  Intake.stop();
+  driveForward(8, 50, 1000);
   wait(200, msec);
   LaunchShootFar(); //second shot
   pid_drive(-10);
-  pid_turn_by(-85);
- // Intake.spin(reverse, 100, percent);
-  pid_drive(-35);
+  pid_turn_by(-90);//Intake.spin(reverse, 100, percent)
+  driveBackward(35, 60);
   Intake.spin(reverse, 100, percent);
   pid_drive(-5);
   pid_turn_by(45);
@@ -344,9 +344,12 @@ long pid_turn(double angle) {
   return loop_count;
 }
 
+double abs_angle = 0;
+
 long pid_turn_by (double angle) 
 {
-  return pid_turn(imu.rotation() + angle);
+  abs_angle += angle;
+  return pid_turn(abs_angle);
 }
 
 ////////////////////////////////////
