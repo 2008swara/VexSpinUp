@@ -15,6 +15,7 @@ extern inertial Inertia;
 extern timer Debounce;
 extern timer PidDriveTimer;
 extern distance dist_sensor;
+extern optical colour_sensor;
 
 /** 
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
