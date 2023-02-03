@@ -35,6 +35,7 @@ timer Debounce = timer();
 timer PidDriveTimer = timer();
 
 distance dist_sensor = distance(PORT5);
+optical colour_sensor = optical(PORT7);
 // VEXcode generated functions
 
 
