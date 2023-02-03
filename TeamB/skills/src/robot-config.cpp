@@ -36,6 +36,7 @@ inertial imu = inertial(PORT16);
 timer testtimer = timer();
 timer DebounceTimer = timer();
 timer PidDriveTimer = timer();
+timer RollerTimer = timer();
 
 distance dist_sensor = distance(PORT10);
 optical opt_sensor = optical(PORT9, false);

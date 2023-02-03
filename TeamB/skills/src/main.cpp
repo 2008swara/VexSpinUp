@@ -52,27 +52,29 @@ long distance_pid_drive(double space);
 /*  function is only called once after the V5 has been powered on and        */
 /*  not every time that the robot is disabled.                               */
 /*---------------------------------------------------------------------------*/
-void RollerAuto(void) {
+
+void RollerAuto(int32_t time) {
   if (DebounceTimer.value() < 0.1) {
     return;
   }
   DebounceTimer.reset();
-    opt_sensor.objectDetectThreshold(253);
-    opt_sensor.setLight(ledState :: on);
-    double hue_val = opt_sensor.hue();
+  double start_time = RollerTimer.time(msec);
+  opt_sensor.objectDetectThreshold(253);
+  opt_sensor.setLight(ledState :: on);
+  double hue_val = opt_sensor.hue();
+  Intake.spin(reverse, 50, percent);
+  printf("Installed: %d, hue %.2f, detected %d\n", opt_sensor.installed(), hue_val,
+  opt_sensor.isNearObject());
+  while (((hue_val < 320) && (hue_val > 45)) && (RollerTimer.time(msec) < (start_time + time))) {
+    //red is about 320 to 45 on vex color wheel
+    //340 or higher means red - while less than that - will keep spinning
+    //250 or lower means blue
     Intake.spin(reverse, 50, percent);
+    hue_val = opt_sensor.hue();
+  
     printf("Installed: %d, hue %.2f, detected %d\n", opt_sensor.installed(), hue_val,
     opt_sensor.isNearObject());
-    while ((hue_val < 320) && (hue_val > 45)) {
-      //red is about 320 to 45 on vex color wheel
-      //340 or higher means red - while less than that - will keep spinning
-      //250 or lower means blue
-      Intake.spin(reverse, 50, percent);
-      hue_val = opt_sensor.hue();
-    
-      printf("Installed: %d, hue %.2f, detected %d\n", opt_sensor.installed(), hue_val,
-      opt_sensor.isNearObject());
-     }
+    }
   Intake.stop();
   opt_sensor.setLight(ledState :: off);
 }
@@ -114,12 +116,12 @@ void LaunchShoot(void) {
 void LaunchShootFar(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(reverse, 10, volt);
+  Shooter.spin(reverse, 9, volt);
   Shooter_pneum.set(false);
   wait(400, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(reverse, 10, volt);
+  Shooter.spin(reverse, 9, volt);
   Shooter_pneum.set(false);
   wait(400, msec);
   Shooter_pneum.set(true);
@@ -157,57 +159,64 @@ void pre_auton(void) {
 
 
 void autonomous(void) {
-  pid_drive(-4);
-  pid_turn_by(-90); 
+  pid_drive(-5);
+  pid_turn_by(-91); 
   pid_drive(-22);
-  pid_turn_by(-90);
-  driveBackward(8, 30, 1000); //goes back into rollers 4.5, 400
-  RollerAuto();
+  pid_turn_by(-87);
+  driveBackward(8, 30, 1100); //goes back into rollers 4.5, 400
+  RollerAuto(2000);
   //wait(300, msec); //rollers done
   pid_drive(4.5); //goes away from rollers
   Intake.spin(reverse, 100, percent);
   pid_turn_by(141); //135
-  pid_drive(-22); //picks up disc //-20.5
-  wait(1, sec);
-
-  Shooter.spin(reverse, 7, volt); //9.25
-
-  pid_turn_by(-51); //-41
+  pid_drive(-21); //picks up disc //-20.5
+  Shooter.spin(reverse, 6.5, volt); //9.25
+  pid_turn_by(-54);//-41
   Intake.stop();
   driveBackward(12, 30, 1500); //goes back into rollers
-  RollerAuto();
+  RollerAuto(2000);
   //Intake.spin(reverse, 100, percent);
   //wait(350, msec); //rollers done
   //Intake.stop();
   //Shooter.spin(reverse, 7, volt); //shooter starts
   pid_drive(4); //goes away from rollers
-  pid_turn_by(-90.6);
+  pid_turn_by(-90.3);
   distance_pid_drive(72);
   LaunchShootFar(); //first shot
   Shooter.stop();
   pid_drive(-5);
   Intake.spin(reverse, 100, percent);
   pid_turn_by(-90);
-  pid_drive(-26); //-20 
-  pid_turn_by(-45);
-  pid_drive(-35); //THIS IS PICKING UP TOO FAST - GETS STUCK
+  wait(500, msec);
+  pid_drive(-23); //-20 
+  pid_turn_by(-48);
+  pid_drive(-32); //THIS IS PICKING UP TOO FAST - GETS STUCK
   Shooter.spin(reverse, 7, volt);
-  pid_turn_by(81); //83
+  pid_turn_by(82); //83
   Intake.stop();
-  driveForward(8, 50, 1000);
+  driveForward(9, 50, 1000);
   wait(200, msec);
   LaunchShootFar(); //second shot
+  Shooter.stop();
   pid_drive(-10);
-  pid_turn_by(-90);//Intake.spin(reverse, 100, percent)
-  driveBackward(35, 60);
+  pid_turn_by(-88);//Intake.spin(reverse, 100, percent)
+  driveBackward(32, 60);
   Intake.spin(reverse, 100, percent);
-  pid_drive(-5);
-  pid_turn_by(45);
+  pid_drive(-3);
+  wait(200, msec);
+  pid_drive(-4);
+  wait(200, msec);
+  pid_drive(-4);
+  wait(200, msec);
+  //pid_drive(-10); //orignally -5
+  //pid_turn_by(-5);
+  //pid_drive(-5);
+  pid_turn_by(50);
   Shooter.spin(reverse, 7, volt);
-  pid_drive(15);
+  pid_drive(20);
   Intake.stop();
-  LaunchShootFar();
-  pid_drive(-20);
+  LaunchShootFar(); // third shot
+  /*pid_drive(-20);
   pid_turn_by(30);
   Intake.spin(reverse, 100, percent);
   pid_turn_by(30);
@@ -218,7 +227,24 @@ void autonomous(void) {
   pid_turn_by(-20);
   Shooter.spin(reverse, 7, volt);
   pid_drive(30);
-  LaunchShootFar();
+  LaunchShootFar(); */
+  pid_drive(-45);
+  pid_turn_by(-90);
+  driveBackward(20, 30, 2000); //goes back into rollers 4.5, 400
+  RollerAuto(2000);
+  //wait(300, msec); //rollers done
+  pid_drive(4.5); //goes away from rollers
+  Intake.spin(reverse, 100, percent);
+  pid_turn_by(141); //135
+  pid_drive(-21); //picks up disc //-20.5
+  wait(1, sec);
+  pid_turn_by(-51); //-41
+  Intake.stop();
+  driveBackward(12, 30, 1500); //goes back into rollers
+  RollerAuto(2000);
+  pid_drive(15);
+  pid_turn_by(-45);
+  extShoot();
   return;
 
   pid_drive(37); //drives toward goal
@@ -376,7 +402,7 @@ void tune_turn_pid(void)
 
 ////////////////////////////////////DRIVE_PID////////////////////////////////////////
 
-double drive_kp = 3;
+double drive_kp = 3.2; //3
 double drive_ki = 0.0015;
 double drive_kd = 0.09;
 double drive_tolerance = 0.1;    // we want to stop when we reach the desired angle +/- 1 degree
@@ -795,7 +821,7 @@ void usercontrol(void) {
     Controller.ButtonB.pressed(RollerSpinBackwards);
 
     Controller.ButtonUp.pressed(ShootOnce);
-    Controller.ButtonA.pressed(RollerAuto);
+    //Controller.ButtonA.pressed(RollerAuto());
 
 
     // This is the main execution loop for the user control program.

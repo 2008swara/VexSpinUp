@@ -15,6 +15,7 @@ extern inertial imu;
 extern timer testtimer;
 extern timer DebounceTimer;
 extern timer PidDriveTimer;
+extern timer RollerTimer;
 extern distance dist_sensor;
 extern optical opt_sensor;
 /** 
