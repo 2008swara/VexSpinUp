@@ -224,7 +224,7 @@ void autonomous(void) {
   //pid_drive(-5);
   Shooter.spin(reverse, 7, volt);
   pid_turn_by(51); //was 49
-  pid_drive(-5);
+  pid_drive(10);
   distance_pid_drive(72);
   Intake.stop();
   wait(500, msec);
@@ -417,7 +417,7 @@ void tune_turn_pid(void)
 
 ////////////////////////////////////DRIVE_PID////////////////////////////////////////
 
-double drive_kp = 3.2; //3
+double drive_kp = 3.5; //3.2
 double drive_ki = 0.0015;
 double drive_kd = 0.09;
 double drive_tolerance = 0.1;    // we want to stop when we reach the desired angle +/- 1 degree
