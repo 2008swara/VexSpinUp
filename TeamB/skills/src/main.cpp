@@ -33,6 +33,8 @@ long pid_drive(double distance, int32_t time=60000, double space=0);
 void extShoot(void);
 void driveBackwardTime(double time, double power);
 long distance_pid_drive(double space);
+void RollerAuto(int32_t time=2000);
+void RollerAutoDrive();
 #define PRINT_LEVEL_MUST 0
 #define PRINT_LEVEL_NORMAL 1
 #define PRINT_LEVEL_DEBUG 2
@@ -79,6 +81,10 @@ void RollerAuto(int32_t time) {
   opt_sensor.setLight(ledState :: off);
 }
 
+void RollerAutoDrive() {
+  RollerAuto(1200);
+}
+
 
 void LaunchShoot(void) {
   // uint32_t prev_time = 0;
@@ -110,7 +116,7 @@ void LaunchShoot(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter_pneum.set(false);
-  Shooter.spin(reverse, 7, volt);
+  Shooter.spin(reverse, 6.75, volt);
 }
 
 void LaunchShootFar(void) {
@@ -164,17 +170,17 @@ void autonomous(void) {
   pid_drive(-22);
   pid_turn_by(-87);
   driveBackward(8, 30, 1100); //goes back into rollers 4.5, 400
-  RollerAuto(2000);
+  RollerAuto(1200);
   //wait(300, msec); //rollers done
   pid_drive(4.5); //goes away from rollers
   Intake.spin(reverse, 100, percent);
   pid_turn_by(141); //135
   pid_drive(-21); //picks up disc //-20.5
-  Shooter.spin(reverse, 6.5, volt); //9.25
+  Shooter.spin(reverse, 6.75, volt); //9.25
   pid_turn_by(-54);//-41
   Intake.stop();
   driveBackward(12, 30, 1500); //goes back into rollers
-  RollerAuto(2000);
+  RollerAuto(1200);
   //Intake.spin(reverse, 100, percent);
   //wait(350, msec); //rollers done
   //Intake.stop();
@@ -192,29 +198,36 @@ void autonomous(void) {
   pid_turn_by(-48);
   pid_drive(-32); //THIS IS PICKING UP TOO FAST - GETS STUCK
   Shooter.spin(reverse, 7, volt);
-  pid_turn_by(82); //83
+  pid_turn_by(84); //83
   Intake.stop();
   driveForward(9, 50, 1000);
-  wait(200, msec);
+  pid_turn_by(-1);
+  //wait(200, msec);
   LaunchShootFar(); //second shot
+  pid_turn_by(1);
   Shooter.stop();
   pid_drive(-10);
-  pid_turn_by(-88);//Intake.spin(reverse, 100, percent)
-  driveBackward(32, 60);
+  pid_turn_by(-88);//-90
+  driveBackward(35, 80);
   Intake.spin(reverse, 100, percent);
   pid_drive(-3);
-  wait(200, msec);
+  //wait(200, msec);
   pid_drive(-4);
-  wait(200, msec);
-  pid_drive(-4);
-  wait(200, msec);
+  //wait(200, msec);
+  pid_turn_by(-2); //we added this
+  pid_drive(-8);
+  //wait(200, msec);
+
+
   //pid_drive(-10); //orignally -5
   //pid_turn_by(-5);
   //pid_drive(-5);
-  pid_turn_by(50);
   Shooter.spin(reverse, 7, volt);
-  pid_drive(20);
+  pid_turn_by(51); //was 49
+  pid_drive(-5);
+  distance_pid_drive(72);
   Intake.stop();
+  wait(500, msec);
   LaunchShootFar(); // third shot
   /*pid_drive(-20);
   pid_turn_by(30);
@@ -228,21 +241,23 @@ void autonomous(void) {
   Shooter.spin(reverse, 7, volt);
   pid_drive(30);
   LaunchShootFar(); */
-  pid_drive(-45);
+  Intake.spin(reverse, 100, percent);
+  pid_drive(-34);
   pid_turn_by(-90);
+  Intake.stop();
   driveBackward(20, 30, 2000); //goes back into rollers 4.5, 400
-  RollerAuto(2000);
+  RollerAuto(1200);
+  Intake.spin(reverse, 100, percent);
   //wait(300, msec); //rollers done
   pid_drive(4.5); //goes away from rollers
-  Intake.spin(reverse, 100, percent);
   pid_turn_by(141); //135
-  pid_drive(-21); //picks up disc //-20.5
-  wait(1, sec);
+  pid_drive(-20); //picks up disc //-20.5
+  //wait(500, sec);
   pid_turn_by(-51); //-41
   Intake.stop();
   driveBackward(12, 30, 1500); //goes back into rollers
-  RollerAuto(2000);
-  pid_drive(15);
+  RollerAuto(1200);
+  pid_drive(12);
   pid_turn_by(-45);
   extShoot();
   return;
@@ -761,7 +776,7 @@ void SpinShooter(void) {
   }
   DebounceTimer.reset();
   if (shootspin == false) {
-    Shooter.spin(reverse, 7, volt);
+    Shooter.spin(reverse, 6.75, volt);
 //    Shooter.spin(forward, 50, percent);
     Intake.stop();
     spin2 = false;
@@ -821,7 +836,7 @@ void usercontrol(void) {
     Controller.ButtonB.pressed(RollerSpinBackwards);
 
     Controller.ButtonUp.pressed(ShootOnce);
-    //Controller.ButtonA.pressed(RollerAuto());
+    Controller.ButtonA.pressed(RollerAutoDrive);
 
 
     // This is the main execution loop for the user control program.
