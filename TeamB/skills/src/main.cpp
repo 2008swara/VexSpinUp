@@ -186,7 +186,7 @@ void autonomous(void) {
   //Intake.stop();
   //Shooter.spin(reverse, 7, volt); //shooter starts
   pid_drive(4); //goes away from rollers
-  pid_turn_by(-90.3);
+  pid_turn_by(-91);
   distance_pid_drive(72);
   LaunchShootFar(); //first shot
   Shooter.stop();
@@ -207,23 +207,22 @@ void autonomous(void) {
   pid_turn_by(1);
   Shooter.stop();
   pid_drive(-10);
-  pid_turn_by(-88);//-90
+  pid_turn_by(-86);//-90
   driveBackward(35, 80);
   Intake.spin(reverse, 100, percent);
   pid_drive(-3);
-  //wait(200, msec);
+  wait(100, msec);
   pid_drive(-4);
-  //wait(200, msec);
+  wait(100, msec);
   pid_turn_by(-2); //we added this
   pid_drive(-8);
-  //wait(200, msec);
 
 
   //pid_drive(-10); //orignally -5
   //pid_turn_by(-5);
   //pid_drive(-5);
   Shooter.spin(reverse, 7, volt);
-  pid_turn_by(51); //was 49
+  pid_turn_by(48); //was 49
   pid_drive(10);
   distance_pid_drive(72);
   Intake.stop();
@@ -257,9 +256,10 @@ void autonomous(void) {
   Intake.stop();
   driveBackward(12, 30, 1500); //goes back into rollers
   RollerAuto(1200);
-  pid_drive(12);
+  pid_drive(14);
   pid_turn_by(-45);
   extShoot();
+  pid_drive(-10);
   return;
 
   pid_drive(37); //drives toward goal
@@ -332,7 +332,7 @@ void autonomous(void) {
 }
 
 double turn_kp = 0.1; //1.5
-double turn_ki = 0.0002; //0.0009
+double turn_ki = 0.00015; //0.0002
 double turn_kd = 0;
 double turn_tolerance = 0.2;    // we want to stop when we reach the desired angle +/- 1 degree
 
@@ -417,7 +417,7 @@ void tune_turn_pid(void)
 
 ////////////////////////////////////DRIVE_PID////////////////////////////////////////
 
-double drive_kp = 3.5; //3.2
+double drive_kp = 4.5; //3.2, then recently 3.5
 double drive_ki = 0.0015;
 double drive_kd = 0.09;
 double drive_tolerance = 0.1;    // we want to stop when we reach the desired angle +/- 1 degree
