@@ -96,6 +96,37 @@ void LaunchShoot(void) {
   Shooter.stop();
   shootspin = false;
 }
+
+void LaunchShootFar(void) {
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 10.25, volt);
+  Shooter_pneum.set(false);
+  wait(700, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter_pneum.set(false);
+  Shooter.stop();
+}
+
+void LaunchShootMedium(void) {
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 9.5, volt);
+  Shooter_pneum.set(false);
+  wait(600, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 9.5, volt);
+  Shooter_pneum.set(false);
+  wait(650, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter_pneum.set(false);
+  Shooter.stop();
+}
+    
+
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
@@ -121,6 +152,29 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
+  Shooter.spin(forward, 9, volt);
+  pid_drive(-24);
+  pid_turn_by(89);
+  driveBackward(15, 30, 800);
+  Intake.spin(forward, 70, percent);
+  wait(300, msec);
+  pid_drive(3);
+  pid_turn_by(-2);
+  LaunchShootFar();
+  pid_turn_by(133);
+  Intake.spin(reverse, 12, volt);
+  pid_drive(-30);
+  Shooter.spin(forward, 8.5, volt);
+  pid_drive(-40);
+  pid_turn_by(-98);
+  LaunchShootMedium();
+  Shooter.spin(forward, 2, volt);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter_pneum.set(false);
+  Shooter.stop();  
+
+  return;
   pid_drive(-25);
   Shooter.spin(forward, 8.5, volt); //start shooter early to save time - 8
   pid_turn_by(90);

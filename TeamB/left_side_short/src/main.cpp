@@ -86,6 +86,42 @@ void LaunchShoot(void) {
   Shooter_pneum.set(false);
   Shooter.spin(forward, 7, volt);
 }
+
+void LaunchShootFar(void) {
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(reverse, 12, volt);
+  Shooter_pneum.set(false);
+  wait(700, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(reverse, 12, volt);
+  Shooter_pneum.set(false);
+  wait(600, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter_pneum.set(false);
+  Shooter.stop();
+}
+
+void LaunchShootMedium(void) {
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(reverse, 9.5, volt);
+  Shooter_pneum.set(false);
+  wait(600, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(reverse, 9, volt);
+  Shooter_pneum.set(false);
+  wait(650, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter_pneum.set(false);
+  Shooter.stop();
+}
+
+
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
@@ -111,6 +147,51 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
+  driveBackward(2, 20, 350);
+  Intake.spin(forward, 70, percent); // spins the first roller
+  wait(300, msec);
+  pid_drive(4);
+  Shooter.spin(reverse, 11, volt);
+  pid_turn_by(-16);
+  wait(1.5, sec);
+  LaunchShootFar(); // first shoot
+  pid_turn_by(-117);
+  Intake.stop();
+  pid_drive(-20);
+  driveBackward(10, 80); // knocks over the stack of three
+  wait(500, msec);
+  Intake.spin(reverse, 12, volt);
+  pid_drive(-3); // picks up the knocked over stack of three
+  wait(100, msec);
+  Shooter.spin(reverse, 8, volt); // turns on shooter for the second shoot 
+  pid_drive(-3); // picks up the knocked over stack of three
+  wait(100, msec);
+  pid_drive(-15);
+  pid_turn_by(84);
+  pid_drive(3);
+  LaunchShootMedium(); // shoots for the second time
+  return;
+
+  pid_turn_by(-90);
+  Intake.spin(reverse, 12, volt);
+  pid_drive(-50); // picks up the three discs on the ground
+  Shooter.spin(reverse, 12, volt); // turns on the shooter for the third shoot 
+  pid_drive(30);
+  pid_turn_by(35);
+  LaunchShootFar(); //shoots for the third time
+  Intake.stop();
+  pid_turn_by(-80);
+  pid_drive(-20);
+  pid_turn_by(90);
+  driveBackward(20, 30, 1500);
+  Intake.spin(forward, 100, percent); // spins the second roller
+  wait(350, msec);
+
+
+
+
+
+  
   Shooter.spin(forward, 8, volt); //7.5
   driveBackward(3.5, 45, 1000);
   Intake.spin(forward, 100, percent); //does rollers
