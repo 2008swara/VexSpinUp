@@ -10,14 +10,21 @@ brain  Brain;
 // VEXcode device constructors
 controller Controller;
 
-motor leftMotorA = motor(PORT1, ratio18_1, true); 
-motor leftMotorB = motor(PORT2, ratio18_1, false);
-motor leftMotorC = motor(PORT3, ratio18_1, true);
+/*11 - right front
+12 - left front
+13-left middle
+14 - right middle
+15- right back
+16 - left back
+*/
+motor leftMotorA = motor(PORT16, ratio18_1, true); 
+motor leftMotorB = motor(PORT13, ratio18_1, false);
+motor leftMotorC = motor(PORT12, ratio18_1, true);
 motor_group LeftDriveSmart = motor_group(leftMotorA, leftMotorB, leftMotorC);
 
-motor rightMotorA = motor(PORT14, ratio18_1, false); 
-motor rightMotorB = motor(PORT12, ratio18_1, true);
-motor rightMotorC = motor(PORT15, ratio18_1, false); 
+motor rightMotorA = motor(PORT15, ratio18_1, false); 
+motor rightMotorB = motor(PORT14, ratio18_1, true);
+motor rightMotorC = motor(PORT11, ratio18_1, false); 
 motor_group RightDriveSmart = motor_group(rightMotorA, rightMotorB, rightMotorC);
 
 int wheelTravel = 4 * M_PI;

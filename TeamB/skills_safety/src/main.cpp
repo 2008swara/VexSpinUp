@@ -85,10 +85,6 @@ void RollerAutoDrive() {
   RollerAuto(1200);
 }
 
-void RollerWhole(double distance, double time) {
-  driveBackward(distance, 30, time); //goes back into rollers 4.5, 400
-  RollerAuto(1500);
-}
 
 void LaunchShoot(void) {
   // uint32_t prev_time = 0;
@@ -173,32 +169,38 @@ void autonomous(void) {
   pid_turn_by(-91); 
   pid_drive(-22);
   pid_turn_by(-87);
-  RollerWhole(7, 800);
+  driveBackward(8, 30, 1100); //goes back into rollers 4.5, 400
+  RollerAuto(1200);
   //wait(300, msec); //rollers done
   pid_drive(4.5); //goes away from rollers
-  Intake.spin(reverse, 11.5, volt);
+  Intake.spin(reverse, 100, percent);
   pid_turn_by(141); //135
   pid_drive(-21); //picks up disc //-20.5
   Shooter.spin(reverse, 6.75, volt); //9.25
   pid_turn_by(-54);//-41
   Intake.stop();
-  RollerWhole(12, 1500);
+  driveBackward(12, 30, 1500); //goes back into rollers
+  RollerAuto(1200);
+  Shooter.spin(reverse, 6.5, volt);
   //Intake.spin(reverse, 100, percent);
   //wait(350, msec); //rollers done
   //Intake.stop();
   //Shooter.spin(reverse, 7, volt); //shooter starts
-  pid_drive(4); //goes away from rollers
+  pid_drive(10); //goes away from rollers
   pid_turn_by(-91);
-  distance_pid_drive(72);
   LaunchShootFar(); //first shot
   Shooter.stop();
+  pid_drive(-10);
+  pid_turn_by(45);
+  extShoot();
+  return;
   pid_drive(-5);
-  Intake.spin(reverse, 11.5, volt);
+  Intake.spin(reverse, 100, percent);
   pid_turn_by(-90);
   wait(500, msec);
   pid_drive(-23); //-20 
   pid_turn_by(-48);
-  pid_drive(-33); //THIS IS PICKING UP TOO FAST - GETS STUCK
+  pid_drive(-32); //THIS IS PICKING UP TOO FAST - GETS STUCK
   Shooter.spin(reverse, 7, volt);
   pid_turn_by(84); //83
   Intake.stop();
@@ -211,7 +213,7 @@ void autonomous(void) {
   pid_drive(-10);
   pid_turn_by(-86);//-90
   driveBackward(35, 80);
-  Intake.spin(reverse, 11.5, volt);
+  Intake.spin(reverse, 100, percent);
   pid_drive(-3);
   wait(100, msec);
   pid_drive(-4);
@@ -242,12 +244,13 @@ void autonomous(void) {
   Shooter.spin(reverse, 7, volt);
   pid_drive(30);
   LaunchShootFar(); */
-  Intake.spin(reverse, 11.5, volt);
-  pid_drive(-36);
+  Intake.spin(reverse, 100, percent);
+  pid_drive(-34);
   pid_turn_by(-90);
   Intake.stop();
-  RollerWhole(20, 2000);
-  Intake.spin(reverse, 11.5, volt);
+  driveBackward(20, 30, 2000); //goes back into rollers 4.5, 400
+  RollerAuto(1200);
+  Intake.spin(reverse, 100, percent);
   //wait(300, msec); //rollers done
   pid_drive(4.5); //goes away from rollers
   pid_turn_by(141); //135
@@ -255,7 +258,8 @@ void autonomous(void) {
   //wait(500, sec);
   pid_turn_by(-51); //-41
   Intake.stop();
-  RollerWhole(12, 1500);
+  driveBackward(12, 30, 1500); //goes back into rollers
+  RollerAuto(1200);
   pid_drive(14);
   pid_turn_by(-45);
   extShoot();
@@ -314,7 +318,7 @@ void autonomous(void) {
   pid_drive(-51);
   pid_turn_by(-90);
   pid_drive(-10, 1000);
-  Intake.spin(reverse, 11.5, volt);
+  Intake.spin(reverse, 100, percent);
   wait(300, msec);
   pid_drive(10);
   Intake.stop();
@@ -322,7 +326,7 @@ void autonomous(void) {
   pid_drive(-15);
   pid_turn_by(-47);
   pid_drive(-24, 2000);
-  Intake.spin(reverse, 11.5, volt);
+  Intake.spin(reverse, 100, percent);
   wait(300, msec);
   Intake.stop();
   pid_drive(16);
