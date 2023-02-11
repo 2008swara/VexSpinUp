@@ -73,18 +73,18 @@ void LaunchShoot(void) {
 
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 10, volt);
+  Shooter.spin(reverse, 10, volt);
   Shooter_pneum.set(false);
   wait(350, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 10, volt);
+  Shooter.spin(reverse, 10, volt);
   Shooter_pneum.set(false);
   wait(350, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter_pneum.set(false);
-  Shooter.spin(forward, 7, volt);
+  Shooter.stop();
 }
 
 void LaunchShootFar(void) {
@@ -675,7 +675,7 @@ void SpinShooter(void) {
   }
   DebounceTimer.reset();
   if (shootspin == false) {
-    Shooter.spin(forward, 7, volt);
+    Shooter.spin(reverse, 6.75, volt);
 //    Shooter.spin(forward, 50, percent);
     Intake.stop();
     spin2 = false;
