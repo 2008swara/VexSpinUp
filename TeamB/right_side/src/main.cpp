@@ -109,7 +109,28 @@ void LaunchShootFar(void) {
   Shooter.stop();
 }
 
+void ShooterTest(void) {
+  Shooter.spin(forward, 8.75, volt);
+  wait(2, sec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 8.75, volt);
+  Shooter_pneum.set(false);
+  wait(2, sec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 8.75, volt);
+  Shooter_pneum.set(false);
+  wait(2, sec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter_pneum.set(false);
+  }
+
 void LaunchShootMedium(void) {
+  Shooter.spin(forward, 8.5, volt);
+  Shooter_pneum.set(false);
+  wait(600, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter.spin(forward, 9.5, volt);
@@ -752,6 +773,7 @@ void usercontrol(void) {
     Controller.ButtonUp.pressed(ShootOnce);
     Controller.ButtonDown.pressed(ShooterReverse);
     Controller.ButtonA.pressed(RollerAutoDrive);
+    Controller.ButtonLeft.pressed(ShooterTest);
 
 
     // This is the main execution loop for the user control program.
