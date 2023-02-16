@@ -120,26 +120,43 @@ void LaunchShoot(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter_pneum.set(false);
-  Shooter.spin(reverse, 6.75, volt);
-}
-
-void LaunchShootFar(void) {
-  Shooter_pneum.set(true);
-  wait(100, msec);
-  Shooter.spin(reverse, 9, volt);
-  Shooter_pneum.set(false);
-  wait(400, msec);
-  Shooter_pneum.set(true);
-  wait(100, msec);
-  Shooter.spin(reverse, 9, volt);
-  Shooter_pneum.set(false);
-  wait(400, msec);
-  Shooter_pneum.set(true);
-  wait(100, msec);
-  Shooter_pneum.set(false);
   Shooter.stop();
 }
 
+void LaunchShootFar(void) {
+  Shooter.spin(reverse, 8.75, volt);
+  wait(2, sec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(reverse, 9.5, volt);
+  Shooter_pneum.set(false);
+  wait(600, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(reverse, 9.25, volt);
+  Shooter_pneum.set(false);
+  wait(600, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter_pneum.set(false);
+}
+
+long LaunchShootCustom(double first_volt, double second_volt, double wait_time) {
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(reverse, first_volt, volt);
+  Shooter_pneum.set(false);
+  wait(wait_time, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(reverse, second_volt, volt);
+  Shooter_pneum.set(false);
+  wait(wait_time, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter_pneum.set(false);
+  return 0;
+}
 
 
 void pre_auton(void) {
@@ -170,6 +187,7 @@ void pre_auton(void) {
 
 
 void autonomous(void) {
+  /*
   Shooter.spin(reverse, 6.45, volt);
   pid_turn_by(-4);
   LaunchShoot();
@@ -195,11 +213,9 @@ void autonomous(void) {
   pid_drive(-30);
   pid_turn_by(-60);
   RollerWhole(15, 500);
+  */
 
 
-
-
-  return;
   pid_drive(-5);
   pid_turn_by(-91); 
   pid_drive(-22);
@@ -209,8 +225,8 @@ void autonomous(void) {
   pid_drive(4.5); //goes away from rollers
   Intake.spin(reverse, 11.5, volt);
   pid_turn_by(141); //135
-  pid_drive(-21); //picks up disc //-20.5
-  Shooter.spin(reverse, 6.75, volt); //9.25
+  pid_drive(-17); //picks up disc //-20.5
+  Shooter.spin(reverse, 8, volt); //9.25
   pid_turn_by(-54);//-41
   Intake.stop();
   RollerWhole(12, 1500);
@@ -220,9 +236,38 @@ void autonomous(void) {
   //Shooter.spin(reverse, 7, volt); //shooter starts
   pid_drive(4); //goes away from rollers
   pid_turn_by(-91);
-  distance_pid_drive(72);
-  LaunchShootFar(); //first shot
-  Shooter.stop();
+  pid_drive(10);
+  pid_turn_by(-3);
+  LaunchShootCustom(9.5, 9.25, 500); //first shot
+  pid_turn_by(-87);
+  Shooter.spin(reverse, 9, volt);
+  Intake.spin(reverse, 12, volt);
+  driveBackward(18, 80);
+  Shooter.spin(reverse, 9.25, volt);
+  pid_drive(10);
+  pid_drive(-10);
+  pid_drive(18);
+
+  pid_turn_by(182);
+  LaunchShootCustom(10, 10, 500); // second shot
+  pid_turn_by(-182);
+  driveBackward(20, 80);
+  Shooter.spin(reverse, 8, volt);
+  pid_drive(-14);
+  pid_turn_by(180);
+  LaunchShootCustom(8.5, 9, 400); // third shot
+  pid_turn_by(90);
+  Intake.stop();
+  pid_drive(-20);
+  pid_turn_by(-90);
+  Intake.spin(reverse, 12, volt);
+  distance_pid_drive(30);
+  pid_turn_by(145);
+  Shooter.spin(reverse, 7, volt);
+  pid_drive(50);
+  pid_turn_by(-45);
+  LaunchShootCustom(7, 7, 300); // fourth shot
+  return;
   pid_drive(-5);
   Intake.spin(reverse, 11.5, volt);
   pid_turn_by(-90);
@@ -448,7 +493,7 @@ void tune_turn_pid(void)
 
 ////////////////////////////////////DRIVE_PID////////////////////////////////////////
 
-double drive_kp = 4.5; //3.2, then recently 3.5
+double drive_kp = 10; //4.5 //3.2, then recently 3.5
 double drive_ki = 0.0015;
 double drive_kd = 0.09;
 double drive_tolerance = 0.1;    // we want to stop when we reach the desired angle +/- 1 degree
@@ -868,6 +913,7 @@ void usercontrol(void) {
 
     Controller.ButtonUp.pressed(ShootOnce);
     Controller.ButtonA.pressed(RollerAutoDrive);
+    Controller.ButtonLeft.pressed(LaunchShootFar);
 
 
     // This is the main execution loop for the user control program.
