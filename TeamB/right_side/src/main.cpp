@@ -109,23 +109,40 @@ void LaunchShootFar(void) {
   Shooter.stop();
 }
 
-void ShooterTest(void) {
-  Shooter.spin(forward, 8.75, volt);
-  wait(2, sec);
+void LongShoot(void) {
+  // uint32_t prev_time = 0;
+  // uint32_t cur_time = 0;
+  // testtimer.reset();
+  // while(testtimer.time() < 5000) {
+  //   cur_time = testtimer.time();
+  //   if (cur_time > prev_time) {
+  //     // printf("%lu,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", 
+  //     // cur_time, Shooter.velocity(pct), Shooter.current(pct), 
+  //     // Shooter.voltage(volt), Shooter.power(watt), Shooter.torque(Nm), 
+  //     // Shooter.efficiency(pct), Shooter.temperature(fahrenheit));
+  //     printf("%lu,%.2f,%.2f\n", 
+  //     cur_time, Shooter.velocity(pct), Shooter.current(pct));
+  //     prev_time = cur_time;
+  //   }
+  // }
+
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 8.75, volt);
+  Shooter.spin(forward, 11.25, volt);
   Shooter_pneum.set(false);
-  wait(2, sec);
+  wait(350, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 8.75, volt);
+  Shooter.spin(forward, 11.25, volt);
   Shooter_pneum.set(false);
-  wait(2, sec);
+  wait(350, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter_pneum.set(false);
-  }
+  Shooter.stop();
+  shootspin = false;
+}
+
 
 void LaunchShootMedium(void) {
   Shooter.spin(forward, 8.5, volt);
@@ -671,6 +688,24 @@ void extShoot(void) {
 
 }
 
+void SpinLong(void) {
+  if (DebounceTimer.value() < 0.1) {
+    return;
+  }
+  DebounceTimer.reset();
+  if (shootspin == false) {
+    Shooter.spin(forward, 8.25, volt); //7
+//    Shooter.spin(forward, 50, percent);
+    Intake.stop();
+    spin2 = false;
+    shootspin = true;
+  }
+  else {
+    Shooter.stop();
+    shootspin = false;
+  }
+}
+
 void SpinShooter(void) {
   if (DebounceTimer.value() < 0.1) {
     return;
@@ -773,7 +808,8 @@ void usercontrol(void) {
     Controller.ButtonUp.pressed(ShootOnce);
     Controller.ButtonDown.pressed(ShooterReverse);
     Controller.ButtonA.pressed(RollerAutoDrive);
-    Controller.ButtonLeft.pressed(ShooterTest);
+    Controller.ButtonLeft.pressed(SpinLong);
+    Controller.ButtonRight.pressed(LongShoot);
 
 
     // This is the main execution loop for the user control program.

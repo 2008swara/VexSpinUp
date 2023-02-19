@@ -32,16 +32,24 @@ long pid_turn_by(double angle);
 long pid_drive(double distance, int32_t time=60000, double space=0);
 void extShoot(void);
 void driveBackwardTime(double time, double power);
+void SpinIntakeBackwards(void);
 long distance_pid_drive(double space);
 void RollerAuto(int32_t time=2000);
 void RollerAutoDrive();
+
+
+bool spin1 = false;
+bool shootspin = false;
+
+
 #define PRINT_LEVEL_MUST 0
 #define PRINT_LEVEL_NORMAL 1
 #define PRINT_LEVEL_DEBUG 2
 
-#define DEBUG_LEVEL PRINT_LEVEL_NORMAL
+#define DEBUG_LEVEL PRINT_LEVEL_DEBUG
 
 #define DEBUG_PRINT(dl, fmt, args...) {if (dl <= DEBUG_LEVEL) printf(fmt, ## args);}
+
 
 // define your global instances of motors and other devices here
 
@@ -55,41 +63,6 @@ void RollerAutoDrive();
 /*  not every time that the robot is disabled.                               */
 /*---------------------------------------------------------------------------*/
 
-void RollerAuto(int32_t time) {
-  if (DebounceTimer.value() < 0.1) {
-    return;
-  }
-  DebounceTimer.reset();
-  double start_time = RollerTimer.time(msec);
-  opt_sensor.objectDetectThreshold(253);
-  opt_sensor.setLight(ledState :: on);
-  double hue_val = opt_sensor.hue();
-  Intake.spin(reverse, 50, percent);
-  printf("Installed: %d, hue %.2f, detected %d\n", opt_sensor.installed(), hue_val,
-  opt_sensor.isNearObject());
-  while (((hue_val < 320) && (hue_val > 45)) && (RollerTimer.time(msec) < (start_time + time))) {
-    //red is about 320 to 45 on vex color wheel
-    //340 or higher means red - while less than that - will keep spinning
-    //250 or lower means blue
-    Intake.spin(reverse, 50, percent);
-    hue_val = opt_sensor.hue();
-  
-    printf("Installed: %d, hue %.2f, detected %d\n", opt_sensor.installed(), hue_val,
-    opt_sensor.isNearObject());
-    }
-  Intake.stop();
-  opt_sensor.setLight(ledState :: off);
-}
-
-void RollerAutoDrive() {
-  RollerAuto(1200);
-}
-
-void RollerWhole(double distance, double time) {
-  driveBackward(distance, 30, time); //goes back into rollers 4.5, 400
-  RollerAuto(1500);
-}
-
 void LaunchShoot(void) {
   // uint32_t prev_time = 0;
   // uint32_t cur_time = 0;
@@ -98,7 +71,7 @@ void LaunchShoot(void) {
   //   cur_time = testtimer.time();
   //   if (cur_time > prev_time) {
   //     // printf("%lu,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", 
-  //     // cur_time, Shooter.velocity(pct), Shooter.current(pct),
+  //     // cur_time, Shooter.velocity(pct), Shooter.current(pct), 
   //     // Shooter.voltage(volt), Shooter.power(watt), Shooter.torque(Nm), 
   //     // Shooter.efficiency(pct), Shooter.temperature(fahrenheit));
   //     printf("%lu,%.2f,%.2f\n", 
@@ -109,56 +82,88 @@ void LaunchShoot(void) {
 
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(reverse, 11, volt); //10
+  Shooter.spin(forward, 10, volt);
   Shooter_pneum.set(false);
   wait(350, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(reverse, 11, volt); //10
+  Shooter.spin(forward, 10, volt);
   Shooter_pneum.set(false);
   wait(350, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter_pneum.set(false);
   Shooter.stop();
+  shootspin = false;
 }
 
 void LaunchShootFar(void) {
-  Shooter.spin(reverse, 8.75, volt);
-  wait(2, sec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(reverse, 9.5, volt);
+  Shooter.spin(forward, 10.25, volt);
   Shooter_pneum.set(false);
-  wait(600, msec);
-  Shooter_pneum.set(true);
-  wait(100, msec);
-  Shooter.spin(reverse, 9.25, volt);
-  Shooter_pneum.set(false);
-  wait(600, msec);
-  Shooter_pneum.set(true);
-  wait(100, msec);
-  Shooter_pneum.set(false);
-}
-
-long LaunchShootCustom(double first_volt, double second_volt, double wait_time) {
-  Shooter_pneum.set(true);
-  wait(100, msec);
-  Shooter.spin(reverse, first_volt, volt);
-  Shooter_pneum.set(false);
-  wait(wait_time, msec);
-  Shooter_pneum.set(true);
-  wait(100, msec);
-  Shooter.spin(reverse, second_volt, volt);
-  Shooter_pneum.set(false);
-  wait(wait_time, msec);
+  wait(700, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter_pneum.set(false);
   Shooter.stop();
-  return 0;
 }
 
+void LongShoot(void) {
+  // uint32_t prev_time = 0;
+  // uint32_t cur_time = 0;
+  // testtimer.reset();
+  // while(testtimer.time() < 5000) {
+  //   cur_time = testtimer.time();
+  //   if (cur_time > prev_time) {
+  //     // printf("%lu,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", 
+  //     // cur_time, Shooter.velocity(pct), Shooter.current(pct), 
+  //     // Shooter.voltage(volt), Shooter.power(watt), Shooter.torque(Nm), 
+  //     // Shooter.efficiency(pct), Shooter.temperature(fahrenheit));
+  //     printf("%lu,%.2f,%.2f\n", 
+  //     cur_time, Shooter.velocity(pct), Shooter.current(pct));
+  //     prev_time = cur_time;
+  //   }
+  // }
+
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 11.25, volt);
+  Shooter_pneum.set(false);
+  wait(350, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 11.25, volt);
+  Shooter_pneum.set(false);
+  wait(350, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter_pneum.set(false);
+  Shooter.stop();
+  shootspin = false;
+}
+
+
+void LaunchShootMedium(void) {
+  Shooter.spin(forward, 8.5, volt);
+  Shooter_pneum.set(false);
+  wait(600, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 9.5, volt);
+  Shooter_pneum.set(false);
+  wait(600, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, 9.5, volt);
+  Shooter_pneum.set(false);
+  wait(650, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter_pneum.set(false);
+  Shooter.stop();
+}
+    
 
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
@@ -166,9 +171,8 @@ void pre_auton(void) {
   Drivetrain.setDriveVelocity(80, percent);
   imu.calibrate();
   while (imu.isCalibrating()) {
-    wait(50, msec);
+    wait(25, msec);
   }
-  Intake.setStopping(hold);
   RightDriveSmart.setStopping(hold);
   LeftDriveSmart.setStopping(hold);
   // All activities that occur before the competition starts
@@ -177,7 +181,7 @@ void pre_auton(void) {
 
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
-/*                              Autonomous Task                   s           */
+/*                              Autonomous Task                              */
 /*                                                                           */
 /*  This task is used to control your robot during the autonomous phase of   */
 /*  a VEX Competition.                                                       */
@@ -185,227 +189,74 @@ void pre_auton(void) {
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
 
-
-
 void autonomous(void) {
-  /*
-  Shooter.spin(reverse, 6.45, volt);
-  pid_turn_by(-4);
-  LaunchShoot();
-  Shooter.stop();
-  pid_turn_by(4);
-  Intake.spin(reverse, 12, volt);
-  pid_drive(-30);
-  Shooter.spin(reverse, 6.45, volt);
-  pid_drive(30);
-  pid_turn_by(-4); 
-  LaunchShoot();
-  pid_turn_by(4);
-  Shooter.stop();
-  distance_pid_drive(72);
-  pid_turn_by(70);
-  driveBackward(12, 80);
-  Shooter.spin(reverse, 8, volt);
-  pid_drive(-13);
-  pid_drive(13);
-  pid_turn_by(-55);
+  Shooter.spin(forward, 9, volt);
+  pid_drive(-24);
+  pid_turn_by(89);
+  driveBackward(15, 30, 800);
+  Intake.spin(forward, 70, percent);
+  wait(300, msec);
+  pid_drive(3);
+  pid_turn_by(-2);
   LaunchShootFar();
-  pid_turn_by(-30);
-  pid_drive(-30);
-  pid_turn_by(-60);
-  RollerWhole(15, 500);
-  */
-  pid_drive(-5);
-  pid_turn_by(-91); 
-  pid_drive(-20);
-  pid_turn_by(-87);
-  RollerWhole(7, 800); //does first roller
-  pid_drive(4.5); //goes away from roller
-  Intake.spin(reverse, 11.5, volt); //intake on
-  pid_turn_by(132); //141
-  pid_drive(-18); //picks up disc
-  Shooter.spin(reverse, 8, volt); //shooter on, 8
-  pid_turn_by(-45); //-54
-  Intake.stop();
-  RollerWhole(12, 1500); //does second roller
-  //Intake.spin(reverse, 100, percent);
-  //wait(350, msec); //rollers done
-  //Intake.stop();
-  //Shooter.spin(reverse, 7, volt); //shooter starts
-  pid_drive(4); //goes away from roller
-  pid_turn_by(-91);
-  pid_drive(5);
-  pid_turn_by(-6);
-  LaunchShootCustom(9.5, 9.5, 500); //first shot, second was 9.25
-  pid_turn_by(-87);
-  Intake.spin(reverse, 12, volt); // intake on
-  driveBackward(12, 80); //18
-  //Shooter.spin(reverse, 9.25, volt);
-  //pid_drive(10);
-  //pid_drive(-10);
-  Shooter.spin(reverse, 8, volt);
-  pid_drive(-15); //18
-  pid_turn_by(187);
-  LaunchShootCustom(10, 11, 500); // second shot
-  pid_turn_by(-187);
-  driveBackward(8, 80); //20
-  Shooter.spin(reverse, 8, volt);
-  pid_drive(-13);
-  pid_turn_by(185);
-  LaunchShootCustom(8.5, 9, 400); // third shot
-  pid_turn_by(-183);
-  Intake.stop();
-  pid_drive(-20);
-  pid_turn_by(-90);
+  pid_turn_by(133);
   Intake.spin(reverse, 12, volt);
-  distance_pid_drive(30);
-  pid_turn_by(145);
-  Shooter.spin(reverse, 7, volt);
-  pid_drive(50);
-  pid_turn_by(-45);
-  LaunchShootCustom(7, 7, 300); // fourth shot
-  return;
-  pid_drive(-5);
-  Intake.spin(reverse, 11.5, volt);
-  pid_turn_by(-90);
-  wait(500, msec);
-  pid_drive(-23); //-20 
-  pid_turn_by(-48);
-  pid_drive(-33); //THIS IS PICKING UP TOO FAST - GETS STUCK
-  Shooter.spin(reverse, 7, volt);
-  pid_turn_by(84); //83
-  Intake.stop();
-  driveForward(9, 50, 1000);
-  pid_turn_by(-1);
-  //wait(200, msec);
-  LaunchShootFar(); //second shot
-  pid_turn_by(1);
-  Shooter.stop();
-  pid_drive(-10);
-  pid_turn_by(-86);//-90
-  driveBackward(35, 80);
-  Intake.spin(reverse, 11.5, volt);
-  pid_drive(-3);
-  wait(100, msec);
-  pid_drive(-4);
-  wait(100, msec);
-  pid_turn_by(-2); //we added this
-  pid_drive(-8);
-
-
-  //pid_drive(-10); //orignally -5
-  //pid_turn_by(-5);
-  //pid_drive(-5);
-  Shooter.spin(reverse, 7, volt);
-  pid_turn_by(48); //was 49
-  pid_drive(10);
-  distance_pid_drive(72);
-  Intake.stop();
-  wait(500, msec);
-  LaunchShootFar(); // third shot
-  /*pid_drive(-20);
-  pid_turn_by(30);
-  Intake.spin(reverse, 100, percent);
-  pid_turn_by(30);
-  pid_drive(30);
-  Intake.stop();
-  pid_turn_by(-30);
   pid_drive(-30);
-  pid_turn_by(-20);
-  Shooter.spin(reverse, 7, volt);
-  pid_drive(30);
-  LaunchShootFar(); */
-  Intake.spin(reverse, 11.5, volt);
-  pid_drive(-36);
-  pid_turn_by(-90);
-  Intake.stop();
-  RollerWhole(20, 2000);
-  Intake.spin(reverse, 11.5, volt);
-  //wait(300, msec); //rollers done
-  pid_drive(4.5); //goes away from rollers
-  pid_turn_by(141); //135
-  pid_drive(-20); //picks up disc //-20.5
-  //wait(500, sec);
-  pid_turn_by(-51); //-41
-  Intake.stop();
-  RollerWhole(12, 1500);
-  pid_drive(14);
-  pid_turn_by(-45);
-  extShoot();
-  pid_drive(-10);
-  return;
+  Shooter.spin(forward, 8.5, volt);
+  pid_drive(-40);
+  pid_turn_by(-98);
+  LaunchShootMedium();
+  Shooter.spin(forward, 2, volt);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter_pneum.set(false);
+  Shooter.stop();  
 
-  pid_drive(37); //drives toward goal
-  pid_turn_by(-90); //turns to wall
-  driveForward(14, 80, 800); //drives shooter side into wall
-  imu.calibrate(); //calibrates
-  while (imu.isCalibrating()) {
-    wait(25, msec);
-  }
-  pid_drive(-5); //goes back
-  pid_turn_by(87); //turns to shoot
-  //pid_turn_by(-6); //turns 
-  distance_pid_drive(52); //drives closer to goal to shoot 
-  //pid_turn_by(-1);
-  LaunchShoot(); //shoots first 3 discs
+  return;
+  pid_drive(-25);
+  Shooter.spin(forward, 8.5, volt); //start shooter early to save time - 8
+  pid_turn_by(90);
+  // turn right = 90, 30
+  driveBackward(5, 45, 1000);
+  Intake.spin(forward, 100, percent); //doing rollers
+  wait(375, msec);
+  Intake.stop(); //rollers done
+  pid_drive(3);
+  pid_turn_by(-90); 
+  // turn left = 80, 20
+  //driveForward(25, 60);
+  pid_drive(25);
+  Intake.spin(reverse, 100, percent); //turn on intake for disc
+  pid_turn_by(-96);
+  //pid_turn_by(-20);
+  //driveBackward(23, 60);
+  pid_drive(-23);//intake disc
+  //wait(1, sec);
+  //Intake.stop();
+  //Intake.stop();
+  //driveBackward(6, 45);
+  //pid_drive(-6);
+  pid_turn_by(-158); //turn to shooting position
+  //pid_turn_by(-70);
+  //wait(2, sec);
+  Shooter_pneum.set(true); //shoots first
+  wait(100, msec);
+  Shooter_pneum.set(false);
+  Shooter.spin(forward, 11, volt);
+  wait(600, msec);
+  Shooter_pneum.set(true); //shoots second
+  wait(100, msec);
+  Shooter_pneum.set(false);
+  Shooter.spin(forward, 11, volt);
+  wait(600, msec);
+  Shooter_pneum.set(true); //shoots third
+  wait(100, msec);
+  Shooter_pneum.set(false);
   Shooter.stop();
-  //pid_turn_by(1);
-  //below this is test code for calibrating after second shoot
-  /*pid_drive(-35);
-  pid_turn_by(-90);
-  driveForward(14, 60, 1000);
-  imu.calibrate(); //calibrates
-  while (imu.isCalibrating()) {
-    wait(25, msec);
-  }
-  pid_drive(-17); //-15
-  Intake.spin(reverse, 100, percent);
-  pid_turn_by(-42);
-  pid_drive(-6);
-  pid_turn_by(-6); //corrects for angled shooting */
-  pid_drive(-43);
-  pid_turn_by(-135); //turns to pick up 3 in a row discs
-  Intake.spin(reverse,100, percent);
-  pid_drive(-46); //picks up discs
-  Shooter.spin(reverse, 7 , volt);
-  pid_drive(-25); //still picking up discs/driving to position
-  Intake.stop();
-  pid_turn_by(140); //turn straight
-  pid_drive(20);
-  driveForward(30, 80, 1000); //drives shooter side into wall
-  imu.calibrate(); //calibrates
-  while (imu.isCalibrating()) {
-    wait(25, msec);
-  }
-  pid_drive(-6.5); //goes back
-  pid_turn_by(-90);
-  //pid_drive(15, 3000);
-  distance_pid_drive(52);
-  pid_turn_by(-16);
-  LaunchShoot();
-  pid_turn_by(16);
-  pid_drive(-51);
-  pid_turn_by(-90);
-  pid_drive(-10, 1000);
-  Intake.spin(reverse, 11.5, volt);
-  wait(300, msec);
-  pid_drive(10);
-  Intake.stop();
-  pid_turn_by(135);
-  pid_drive(-15);
-  pid_turn_by(-47);
-  pid_drive(-24, 2000);
-  Intake.spin(reverse, 11.5, volt);
-  wait(300, msec);
-  Intake.stop();
-  pid_drive(16);
-  pid_turn_by(-45);
-  pid_drive(-6);
-  extShoot();
 }
 
 double turn_kp = 0.1; //1.5
-double turn_ki = 0.00015; //0.0002
+double turn_ki = 0.0004; //0.0009
 double turn_kd = 0;
 double turn_tolerance = 0.2;    // we want to stop when we reach the desired angle +/- 1 degree
 
@@ -458,12 +309,9 @@ long pid_turn(double angle) {
   return loop_count;
 }
 
-double abs_angle = 0;
-
 long pid_turn_by (double angle) 
 {
-  abs_angle += angle;
-  return pid_turn(abs_angle);
+  return pid_turn(imu.rotation() + angle);
 }
 
 ////////////////////////////////////
@@ -490,7 +338,7 @@ void tune_turn_pid(void)
 
 ////////////////////////////////////DRIVE_PID////////////////////////////////////////
 
-double drive_kp = 15; //4.5 //3.2, then recently 3.5
+double drive_kp = 4.2; //3
 double drive_ki = 0.0015;
 double drive_kd = 0.09;
 double drive_tolerance = 0.1;    // we want to stop when we reach the desired angle +/- 1 degree
@@ -684,7 +532,6 @@ void driveForward(double rotation, double power, int32_t time) {
   Drivetrain.driveFor(forward, rotation, inches);
 }
 
-
 void turnRight(double angle, double power) {
   double start_angle = imu.yaw();
   angle = angle - (angle - start_angle) * 0.1;
@@ -743,8 +590,6 @@ void rightdrivesmart(void){
 
 */
 
-bool spin1 = false;
-bool shootspin = false;
 void SpinIntakeForwards(void){
   if (DebounceTimer.value() < 0.1) {
     return;
@@ -769,8 +614,8 @@ void SpinIntakeBackwards(void){
   DebounceTimer.reset();
   if (spin2 == false){
     Intake.spin(reverse, 100, percent);
-    //Shooter.stop();
-   // shootspin = false;
+    Shooter.stop();
+    shootspin = false;
     spin2 = true;
   }
   else {
@@ -843,13 +688,31 @@ void extShoot(void) {
 
 }
 
+void SpinLong(void) {
+  if (DebounceTimer.value() < 0.1) {
+    return;
+  }
+  DebounceTimer.reset();
+  if (shootspin == false) {
+    Shooter.spin(forward, 8.25, volt); //7
+//    Shooter.spin(forward, 50, percent);
+    Intake.stop();
+    spin2 = false;
+    shootspin = true;
+  }
+  else {
+    Shooter.stop();
+    shootspin = false;
+  }
+}
+
 void SpinShooter(void) {
   if (DebounceTimer.value() < 0.1) {
     return;
   }
   DebounceTimer.reset();
   if (shootspin == false) {
-    Shooter.spin(reverse, 8, volt); //normal =6.75, but we want it to be 6.5
+    Shooter.spin(forward, 6.75, volt); //7
 //    Shooter.spin(forward, 50, percent);
     Intake.stop();
     spin2 = false;
@@ -869,13 +732,112 @@ void ShootOnce(void) {
   Shooter_pneum.set(false);
 }
 
+void ShooterReverse(void) {
+  if (DebounceTimer.value() < 0.1) {
+    return;
+  }
+  DebounceTimer.reset();
+  Shooter.spin(reverse, 11, volt);
+}
 
+void RollerAuto(int32_t time) {
+  if (DebounceTimer.value() < 0.1) {
+    return;
+  }
+  DebounceTimer.reset();
+  double start_time = RollerTimer.time(msec);
+  opt_sensor.objectDetectThreshold(253);
+  opt_sensor.setLight(ledState :: on);
+  double hue_val = opt_sensor.hue();
+  Intake.spin(reverse, 70, percent);
+  printf("Installed: %d, hue %.2f, detected %d\n", opt_sensor.installed(), hue_val,
+    opt_sensor.isNearObject());
+  while (((hue_val < 320) && (hue_val > 45)) && (RollerTimer.time(msec) < (start_time + time))) {
+    //340 or higher means red - while less than that - will keep spinning
+    //250 or lower means blue
+    Intake.spin(reverse, 70, percent);
+    hue_val = opt_sensor.hue();
+//    printf("Installed: %d, hue %.2f, detected %d\n", opt_sensor.installed(), hue_val,
+//      opt_sensor.isNearObject());
+  }
+  Intake.stop();
+  opt_sensor.setLight(ledState :: off);
+}
+
+void RollerAutoDrive(void) {
+  RollerAuto(2000);
+}
+
+double vision_kp = 1; //1.5
+double vision_ki = 0.0004; //0.0009
+double vision_kd = 0;
+double vision_tolerance = 4;    // we want to stop when we reach the desired angle +/- 1 degree
+
+uint32_t VisionPid(uint32_t GoalX) {
+  double delay = 50;   // imu can output reading at a rate of 50 hz (20 msec)
+  long loop_count = 0;
+  double error = 5000;
+  double total_error = 0;
+  double derivative = 0;
+  double prev_error = 0;
+  double voltage = 0;
+  uint32_t ObjNum = Vision4.takeSnapshot(Vision4__GOAL_RED);
+  vision::object LObject = Vision4.largestObject;
+  double min_volt = 2.5;   // we don't want to apply less than min_volt, or else drivetrain won't move
+//  double max_volt = 11.5;  // we don't want to apply more than max volt, or else we may damage motor
+  double max_volt = 9.0;  // we don't want to apply more than max volt, or else we may damage motor
+  bool direction = true;
+  DEBUG_PRINT(PRINT_LEVEL_NORMAL, "Turn to Goalx %lu, current x %d\n", GoalX, LObject.centerX);
+  // keep turning until we reach desired angle +/- tolerance
+  while (error > vision_tolerance) {
+    error = GoalX - LObject.centerX;
+    if (error > 0) {
+      direction = false;
+    } else {
+      error = error * -1;
+      direction = true;
+    }
+    total_error += error;   // used for integration term
+    derivative = error - prev_error;
+    voltage = vision_kp * error + vision_ki * total_error - vision_kd * derivative;
+    if (voltage < min_volt) {
+        voltage = min_volt;
+      } else if (voltage > max_volt) {
+      voltage = max_volt;
+    }
+    DEBUG_PRINT(PRINT_LEVEL_DEBUG, "error %.2f, voltage %.2f, direction %d\n", error, voltage, direction);
+    if (direction) {
+      RightDriveSmart.spin(reverse, voltage, volt);
+      LeftDriveSmart.spin(forward, voltage, volt);
+    } else {
+      RightDriveSmart.spin(forward, voltage, volt);
+      LeftDriveSmart.spin(reverse, voltage, volt);
+    }
+    prev_error = error;
+    wait(delay, msec);
+    ObjNum = Vision4.takeSnapshot(Vision4__GOAL_RED);
+    ++loop_count;
+  }
+  RightDriveSmart.stop();
+  LeftDriveSmart.stop();
+  DEBUG_PRINT(PRINT_LEVEL_DEBUG, "turn to goal %lu, current x %d, loop count %ld\n", GoalX, LObject.centerX, loop_count);
+  return loop_count;
+}
+
+
+void VisionAlign(void) {
+  if (DebounceTimer.value() < 0.1) {
+    return;
+  }
+  DebounceTimer.reset();
+  VisionPid(212);
+}
 
 void usercontrol(void) {
   // User control code here, inside the loop
 
   double turnImportance = 1;
-  double speed_ratio = (9.0 / 5.0);
+  double speed_ratio = (11.0 / 5.0);
   //tune_turn_pid();
   while (1) {
 
@@ -909,8 +871,9 @@ void usercontrol(void) {
     Controller.ButtonB.pressed(RollerSpinBackwards);
 
     Controller.ButtonUp.pressed(ShootOnce);
+    Controller.ButtonDown.pressed(ShooterReverse);
     Controller.ButtonA.pressed(RollerAutoDrive);
-    Controller.ButtonLeft.pressed(LaunchShootFar);
+    Controller.ButtonLeft.pressed(VisionAlign);
 
 
     // This is the main execution loop for the user control program.
