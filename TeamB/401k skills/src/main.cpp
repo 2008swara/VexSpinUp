@@ -109,18 +109,19 @@ void LaunchShoot(void) {
 
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(reverse, 11, volt); //10
+  Shooter.spin(reverse, 10, volt); //10
   Shooter_pneum.set(false);
   wait(350, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(reverse, 11, volt); //10
+  Shooter.spin(reverse, 10, volt); //10
   Shooter_pneum.set(false);
   wait(350, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter_pneum.set(false);
-  Shooter.stop();
+  Shooter.spin(reverse, 7.5, volt);
+  //Shooter.stop();
 }
 
 void LaunchShootFar(void) {
@@ -843,13 +844,21 @@ void extShoot(void) {
 
 }
 
+void StartShooter(void) {
+    Shooter.spin(reverse, 7.5, volt); //normal =6.75
+//    Shooter.spin(forward, 50, percent);
+    Intake.stop();
+    spin2 = false;
+    shootspin = true;
+}
+
 void SpinShooter(void) {
   if (DebounceTimer.value() < 0.1) {
     return;
   }
   DebounceTimer.reset();
   if (shootspin == false) {
-    Shooter.spin(reverse, 8, volt); //normal =6.75, but we want it to be 6.5
+    Shooter.spin(reverse, 7.5, volt); //normal =6.75
 //    Shooter.spin(forward, 50, percent);
     Intake.stop();
     spin2 = false;
@@ -876,6 +885,7 @@ void usercontrol(void) {
 
   double turnImportance = 1;
   double speed_ratio = (9.0 / 5.0);
+  StartShooter();
   //tune_turn_pid();
   while (1) {
 

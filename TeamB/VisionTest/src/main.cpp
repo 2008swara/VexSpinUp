@@ -768,8 +768,8 @@ void RollerAutoDrive(void) {
   RollerAuto(2000);
 }
 
-double vision_kp = 1; //1.5
-double vision_ki = 0.0004; //0.0009
+double vision_kp = 0.01; //1.5
+double vision_ki = 0.00004; //0.0009
 double vision_kd = 0;
 double vision_tolerance = 4;    // we want to stop when we reach the desired angle +/- 1 degree
 
@@ -782,10 +782,11 @@ uint32_t VisionPid(uint32_t GoalX) {
   double prev_error = 0;
   double voltage = 0;
   uint32_t ObjNum = Vision4.takeSnapshot(Vision4__GOAL_RED);
+  printf("ObjNum %lu\n", ObjNum);
   vision::object LObject = Vision4.largestObject;
   double min_volt = 2.5;   // we don't want to apply less than min_volt, or else drivetrain won't move
 //  double max_volt = 11.5;  // we don't want to apply more than max volt, or else we may damage motor
-  double max_volt = 9.0;  // we don't want to apply more than max volt, or else we may damage motor
+  double max_volt = 6.5;  // we don't want to apply more than max volt, or else we may damage motor
   bool direction = true;
   DEBUG_PRINT(PRINT_LEVEL_NORMAL, "Turn to Goalx %lu, current x %d\n", GoalX, LObject.centerX);
   // keep turning until we reach desired angle +/- tolerance
@@ -805,7 +806,7 @@ uint32_t VisionPid(uint32_t GoalX) {
       } else if (voltage > max_volt) {
       voltage = max_volt;
     }
-    DEBUG_PRINT(PRINT_LEVEL_DEBUG, "error %.2f, voltage %.2f, direction %d\n", error, voltage, direction);
+    DEBUG_PRINT(PRINT_LEVEL_DEBUG, "error %.2f, voltage %.2f, direction %d, num %lu\n", error, voltage, direction, ObjNum);
     if (direction) {
       RightDriveSmart.spin(reverse, voltage, volt);
       LeftDriveSmart.spin(forward, voltage, volt);
@@ -830,7 +831,7 @@ void VisionAlign(void) {
     return;
   }
   DebounceTimer.reset();
-  VisionPid(212);
+  VisionPid(197);
 }
 
 void usercontrol(void) {
@@ -851,13 +852,6 @@ void usercontrol(void) {
     // 12 - 12 = 0
     // 12 + 12 = 12(due to cap)
 
-    RightDriveSmart.spin(reverse, speed_ratio * (forwardVolts + turnVolts), voltageUnits::volt);
-    LeftDriveSmart.spin(forward, speed_ratio * (forwardVolts - turnVolts), voltageUnits::volt);
-
-//    printf("axis1: %.2f, axis3: %.2f, leftv: %.2f, rightv: %.2f\n",
-//      forwardVal, turnVal, forwardVolts - turnVolts, forwardVolts + turnVolts);
-
-
     Controller.ButtonL1.pressed(SpinIntakeForwards);
     Controller.ButtonL2.pressed(SpinIntakeBackwards);
     Controller.ButtonR1.pressed(SpinShooter);
@@ -874,6 +868,15 @@ void usercontrol(void) {
     Controller.ButtonDown.pressed(ShooterReverse);
     Controller.ButtonA.pressed(RollerAutoDrive);
     Controller.ButtonLeft.pressed(VisionAlign);
+    continue;
+
+    RightDriveSmart.spin(reverse, speed_ratio * (forwardVolts + turnVolts), voltageUnits::volt);
+    LeftDriveSmart.spin(forward, speed_ratio * (forwardVolts - turnVolts), voltageUnits::volt);
+
+//    printf("axis1: %.2f, axis3: %.2f, leftv: %.2f, rightv: %.2f\n",
+//      forwardVal, turnVal, forwardVolts - turnVolts, forwardVolts + turnVolts);
+
+
 
 
     // This is the main execution loop for the user control program.
