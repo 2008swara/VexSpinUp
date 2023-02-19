@@ -225,7 +225,7 @@ void autonomous(void) {
   Intake.spin(reverse, 11.5, volt); //intake on
   pid_turn_by(132); //141
   pid_drive(-18); //picks up disc
-  Shooter.spin(reverse, 8, volt); //shooter on, 8
+  Shooter.spin(reverse, 9.5, volt); //shooter on, 8
   pid_turn_by(-45); //-54
   Intake.stop();
   RollerWhole(12, 1500); //does second roller
@@ -237,25 +237,27 @@ void autonomous(void) {
   pid_turn_by(-91);
   pid_drive(5);
   pid_turn_by(-6);
-  LaunchShootCustom(9.5, 9.5, 500); //first shot, second was 9.25
+  LaunchShootCustom(10.5, 10.5, 500); //first shot, second was 9.25
   pid_turn_by(-87);
   Intake.spin(reverse, 12, volt); // intake on
   driveBackward(12, 80); //18
   //Shooter.spin(reverse, 9.25, volt);
   //pid_drive(10);
   //pid_drive(-10);
-  Shooter.spin(reverse, 8, volt);
+  Shooter.spin(reverse, 9, volt);
   pid_drive(-15); //18
-  pid_turn_by(187);
+  pid_turn_by(190);
   LaunchShootCustom(10, 11, 500); // second shot
-  pid_turn_by(-187);
+  pid_turn_by(-190);
   driveBackward(8, 80); //20
   Shooter.spin(reverse, 8, volt);
   pid_drive(-13);
-  pid_turn_by(185);
+  pid_turn_by(188);
   LaunchShootCustom(8.5, 9, 400); // third shot
-  pid_turn_by(-183);
+  pid_turn_by(-188);
   Intake.stop();
+  return;
+
   pid_drive(-20);
   pid_turn_by(-90);
   Intake.spin(reverse, 12, volt);
