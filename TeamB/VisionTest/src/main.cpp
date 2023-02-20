@@ -36,10 +36,11 @@ void SpinIntakeBackwards(void);
 long distance_pid_drive(double space);
 void RollerAuto(int32_t time=2000);
 void RollerAutoDrive();
-
+void CustomLaunch (double v1, double v2, double v3, double t1, double t2, double t3);
 
 bool spin1 = false;
 bool shootspin = false;
+bool vision_in_prog = false;
 
 
 #define PRINT_LEVEL_MUST 0
@@ -614,8 +615,8 @@ void SpinIntakeBackwards(void){
   DebounceTimer.reset();
   if (spin2 == false){
     Intake.spin(reverse, 100, percent);
-    Shooter.stop();
-    shootspin = false;
+    //Shooter.stop();
+    //shootspin = false;
     spin2 = true;
   }
   else {
@@ -768,12 +769,12 @@ void RollerAutoDrive(void) {
   RollerAuto(2000);
 }
 
-double vision_kp = 0.01; //1.5
+double vision_kp = 0.05; //1.5
 double vision_ki = 0.00004; //0.0009
 double vision_kd = 0;
-double vision_tolerance = 4;    // we want to stop when we reach the desired angle +/- 1 degree
+double vision_tolerance = 2;    // we want to stop when we reach the desired angle +/- 1 degree
 
-uint32_t VisionPid(uint32_t GoalX) {
+uint32_t VisionPid(int GoalX) {
   double delay = 50;   // imu can output reading at a rate of 50 hz (20 msec)
   long loop_count = 0;
   double error = 5000;
@@ -782,22 +783,22 @@ uint32_t VisionPid(uint32_t GoalX) {
   double prev_error = 0;
   double voltage = 0;
   uint32_t ObjNum = Vision4.takeSnapshot(Vision4__GOAL_RED);
+  bool direction = true;
   printf("ObjNum %lu\n", ObjNum);
   vision::object LObject = Vision4.largestObject;
+  error = GoalX - LObject.centerX;
+  if (error > 0) {
+    direction = false;
+  } else {
+    error = error * -1;
+    direction = true;
+  }
   double min_volt = 2.5;   // we don't want to apply less than min_volt, or else drivetrain won't move
 //  double max_volt = 11.5;  // we don't want to apply more than max volt, or else we may damage motor
   double max_volt = 6.5;  // we don't want to apply more than max volt, or else we may damage motor
-  bool direction = true;
-  DEBUG_PRINT(PRINT_LEVEL_NORMAL, "Turn to Goalx %lu, current x %d\n", GoalX, LObject.centerX);
+  DEBUG_PRINT(PRINT_LEVEL_NORMAL, "Turn to Goalx %d, current x %d, error %.2f\n", GoalX, LObject.centerX, error);
   // keep turning until we reach desired angle +/- tolerance
   while (error > vision_tolerance) {
-    error = GoalX - LObject.centerX;
-    if (error > 0) {
-      direction = false;
-    } else {
-      error = error * -1;
-      direction = true;
-    }
     total_error += error;   // used for integration term
     derivative = error - prev_error;
     voltage = vision_kp * error + vision_ki * total_error - vision_kd * derivative;
@@ -806,7 +807,6 @@ uint32_t VisionPid(uint32_t GoalX) {
       } else if (voltage > max_volt) {
       voltage = max_volt;
     }
-    DEBUG_PRINT(PRINT_LEVEL_DEBUG, "error %.2f, voltage %.2f, direction %d, num %lu\n", error, voltage, direction, ObjNum);
     if (direction) {
       RightDriveSmart.spin(reverse, voltage, volt);
       LeftDriveSmart.spin(forward, voltage, volt);
@@ -817,40 +817,137 @@ uint32_t VisionPid(uint32_t GoalX) {
     prev_error = error;
     wait(delay, msec);
     ObjNum = Vision4.takeSnapshot(Vision4__GOAL_RED);
+    error = GoalX - LObject.centerX;
+    if (error > 0) {
+      direction = false;
+    } else {
+      error = error * -1;
+      direction = true;
+    }
+    DEBUG_PRINT(PRINT_LEVEL_DEBUG, "error %.2f, voltage %.2f, direction %d, num %lu\n", error, voltage, direction, ObjNum);
     ++loop_count;
   }
   RightDriveSmart.stop();
   LeftDriveSmart.stop();
+  ObjNum = Vision4.takeSnapshot(Vision4__GOAL_RED);
   DEBUG_PRINT(PRINT_LEVEL_DEBUG, "turn to goal %lu, current x %d, loop count %ld\n", GoalX, LObject.centerX, loop_count);
   return loop_count;
 }
 
+double vd_kp = 0.05; //1.5
+double vd_ki = 0.00004; //0.0009
+double vd_kd = 0;
+double vd_tolerance = 1;    // we want to stop when we reach the desired angle +/- 1 degree
+
+uint32_t VisionDrive(int GoalW, signature GoalSig) {
+  double delay = 50;   // imu can output reading at a rate of 50 hz (20 msec)
+  long loop_count = 0;
+  double error = 5000;
+  double total_error = 0;
+  double derivative = 0;
+  double prev_error = 0;
+  double voltage = 0;
+  uint32_t ObjNum = Vision4.takeSnapshot(GoalSig);
+  bool direction = true;
+  printf("ObjNum %lu\n", ObjNum);
+  vision::object LObject = Vision4.largestObject;
+  error = GoalW - LObject.width;
+  if (error > 0) {
+    direction = false;
+  } else {
+    error = error * -1;
+    direction = true;
+  }
+  double min_volt = 2.5;   // we don't want to apply less than min_volt, or else drivetrain won't move
+//  double max_volt = 11.5;  // we don't want to apply more than max volt, or else we may damage motor
+  double max_volt = 6.5;  // we don't want to apply more than max volt, or else we may damage motor
+  DEBUG_PRINT(PRINT_LEVEL_NORMAL, "Turn to Goalw %d, current width %d, error %.2f\n", GoalW, LObject.width, error);
+  // keep turning until we reach desired angle +/- tolerance
+  while (error > vd_tolerance) {
+    total_error += error;   // used for integration term
+    derivative = error - prev_error;
+    voltage = vd_kp * error + vd_ki * total_error - vd_kd * derivative;
+    if (voltage < min_volt) {
+        voltage = min_volt;
+      } else if (voltage > max_volt) {
+      voltage = max_volt;
+    }
+    if (direction) {
+      RightDriveSmart.spin(reverse, voltage, volt);
+      LeftDriveSmart.spin(reverse, voltage, volt);
+    } else {
+      RightDriveSmart.spin(forward, voltage, volt);
+      LeftDriveSmart.spin(forward, voltage, volt);
+    }
+    prev_error = error;
+    wait(delay, msec);
+    ObjNum = Vision4.takeSnapshot(Vision4__GOAL_RED);
+    error = GoalW - LObject.width;
+    if (error > 0) {
+      direction = false;
+    } else {
+      error = error * -1;
+      direction = true;
+    }
+    DEBUG_PRINT(PRINT_LEVEL_DEBUG, "error %.2f, voltage %.2f, direction %d, num %lu\n", error, voltage, direction, ObjNum);
+    ++loop_count;
+  }
+  RightDriveSmart.stop();
+  LeftDriveSmart.stop();
+  ObjNum = Vision4.takeSnapshot(Vision4__GOAL_RED);
+  DEBUG_PRINT(PRINT_LEVEL_DEBUG, "turn to goal %d, current w %d, loop count %ld\n", GoalW, LObject.width, loop_count);
+  return loop_count;
+}
+
+void VisionAlignShoot(signature sig, int GoalX) {
+  VisionPid(GoalX);
+  vision::object LObject = Vision4.largestObject;
+  int width = LObject.width;
+  double volt = (width * -.032258) + 9.23871;
+  CustomLaunch(volt, 10, 10, 2000, 350, 350);
+}
+
+double DefaultV = 8;
+void CustomLaunch (double v1, double v2, double v3, double t1, double t2, double t3) {
+  Shooter.spin(forward, v1, volt);
+  wait(t1, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, v2, volt);
+  Shooter_pneum.set(false);
+  wait(t2, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter.spin(forward, v3, volt);
+  Shooter_pneum.set(false);
+  wait(t3, msec);
+  Shooter_pneum.set(true);
+  wait(100, msec);
+  Shooter_pneum.set(false);
+  Shooter.spin(forward, DefaultV, volt);
+}
 
 void VisionAlign(void) {
   if (DebounceTimer.value() < 0.1) {
     return;
   }
   DebounceTimer.reset();
-  VisionPid(197);
+  vision_in_prog = true;
+  VisionAlignShoot(Vision4__GOAL_RED, 188);
+  vision_in_prog = false;
+  return;
+  VisionPid(190);
+  VisionDrive(55, Vision4__GOAL_RED); //7volts = 88width
+  VisionPid(190);
+  vision_in_prog = false;
 }
 
 void usercontrol(void) {
   // User control code here, inside the loop
+  Shooter.spin(forward, DefaultV, volt);
 
   double turnImportance = 1;
   double speed_ratio = (11.0 / 5.0);
-  //tune_turn_pid();
-  while (1) {
-
-    double turnVal = Controller.Axis3.position(percent);
-    double forwardVal = Controller.Axis1.position(percent);
-
-    
-    double turnVolts = turnVal * -0.12;
-    double forwardVolts = forwardVal * 0.12 * (1 - (abs(turnVolts)/12.0) * turnImportance);
-
-    // 12 - 12 = 0
-    // 12 + 12 = 12(due to cap)
 
     Controller.ButtonL1.pressed(SpinIntakeForwards);
     Controller.ButtonL2.pressed(SpinIntakeBackwards);
@@ -868,10 +965,25 @@ void usercontrol(void) {
     Controller.ButtonDown.pressed(ShooterReverse);
     Controller.ButtonA.pressed(RollerAutoDrive);
     Controller.ButtonLeft.pressed(VisionAlign);
-    continue;
 
-    RightDriveSmart.spin(reverse, speed_ratio * (forwardVolts + turnVolts), voltageUnits::volt);
-    LeftDriveSmart.spin(forward, speed_ratio * (forwardVolts - turnVolts), voltageUnits::volt);
+  //tune_turn_pid();
+  while (1) {
+
+    double turnVal = Controller.Axis3.position(percent);
+    double forwardVal = Controller.Axis1.position(percent);
+
+    
+    double turnVolts = turnVal * -0.12;
+    double forwardVolts = forwardVal * 0.12 * (1 - (abs(turnVolts)/12.0) * turnImportance);
+
+    // 12 - 12 = 0
+    // 12 + 12 = 12(due to cap)
+
+
+    if (vision_in_prog == false) {
+      RightDriveSmart.spin(reverse, speed_ratio * (forwardVolts + turnVolts), voltageUnits::volt);
+      LeftDriveSmart.spin(forward, speed_ratio * (forwardVolts - turnVolts), voltageUnits::volt);
+    }
 
 //    printf("axis1: %.2f, axis3: %.2f, leftv: %.2f, rightv: %.2f\n",
 //      forwardVal, turnVal, forwardVolts - turnVolts, forwardVolts + turnVolts);
