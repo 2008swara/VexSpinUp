@@ -12,8 +12,11 @@ controller Controller;
 
 //signature Vision4__GOAL_RED = signature (1, 8889, 9689, 9289, 477, 815, 646, 3.7, 0);
 signature Vision4__GOAL_RED = signature (1, 9039, 10037, 9538, -287, 267, -10, 3.5, 0);
-signature Vision5__GOAL_BLUE = signature (1, -2253, -1599, -1926, 7081, 10527, 8804, 3.5, 0);
-vision Vision4 = vision (PORT5, 50, Vision4__GOAL_RED, Vision5__GOAL_BLUE);
+signature Vision4__GOAL_BLUE = signature (2, -2253, -1599, -1926, 7081, 10527, 8804, 3.5, 0);
+vision Vision4 = vision (PORT5, 50, Vision4__GOAL_RED, Vision4__GOAL_BLUE);
+//vision Vision4 = vision (PORT5, 50, Vision4__GOAL_RED);
+//vision Vision5 = vision (PORT5, 50, Vision4__GOAL_BLUE);
+
 
 motor leftMotorA = motor(PORT1, ratio18_1, true); 
 motor leftMotorB = motor(PORT2, ratio18_1, false);
