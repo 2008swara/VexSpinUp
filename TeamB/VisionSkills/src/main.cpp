@@ -29,13 +29,14 @@ void driveBackward(double rotation, double power, int32_t time=60000);
 void turnRight(double angle, double power);
 void turnLeft(double angle, double power);
 long pid_turn_by(double angle);
-long pid_drive(double distance, int32_t time=60000, double space=0);
+long pid_drive(double distance, double drive_kp=15, int32_t time=60000, double space=0);
 void extShoot(void);
 void driveBackwardTime(double time, double power);
 void SpinIntakeBackwards(void);
 long distance_pid_drive(double space);
 void RollerAuto(int32_t time=2000);
 void RollerAutoDrive();
+void VisionAlignShoot(signature sig, int GoalX);
 void CustomLaunch (double v1, double v2, double v3, double t1, double t2, double t3);
 uint32_t VisionPid(int GoalX, signature ColorSig);
 
@@ -218,105 +219,108 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
-  /*
-  Shooter.spin(reverse, 6.45, volt);
-  pid_turn_by(-4);
-  LaunchShoot();
-  Shooter.stop();
-  pid_turn_by(4);
-  Intake.spin(reverse, 12, volt);
-  pid_drive(-30);
-  Shooter.spin(reverse, 6.45, volt);
-  pid_drive(30);
-  pid_turn_by(-4); 
-  LaunchShoot();
-  pid_turn_by(4);
-  Shooter.stop();
-  distance_pid_drive(72);
-  pid_turn_by(70);
-  driveBackward(12, 80);
-  Shooter.spin(reverse, 8, volt);
-  pid_drive(-13);
-  pid_drive(13);
-  pid_turn_by(-55);
-  LaunchShootFar();
-  pid_turn_by(-30);
-  pid_drive(-30);
-  pid_turn_by(-60);
-  RollerWhole(15, 500);
-  */
-  VisionPid(185, Vision4__GOAL_RED);
-  wait(2, sec);
-  pid_turn_by(180);
-  VisionPid(185, Vision4__GOAL_BLUE);
-  return;
-  pid_drive(-9.5);
+
+  pid_drive(-7.5);
   pid_turn_by(-91); 
   Intake.spin(reverse, 12, volt);
-  pid_drive(-25);
-  pid_drive(3);
+  pid_drive(-18);
+  pid_turn_by(8);
+  pid_drive(-8, 10);
+  pid_drive(5);
+  pid_turn_by(-8);
   pid_turn_by(-91);
   Intake.stop();
-  RollerWhole(18, 1000); //does first roller
+  RollerWhole(22, 1200); //does first roller
   pid_drive(4.5); //goes away from roller
   Intake.spin(reverse, 12, volt); //intake on
   pid_turn_by(133); //141
   pid_drive(-19); //picks up disc
-  Shooter.spin(forward, 8.25, volt); //shooter on, 8
-  pid_turn_by(-45); //-54
+  Shooter.spin(forward, 8, volt); //shooter on, 8
+  pid_turn_by(-43); //-54
   Intake.stop();
   RollerWhole(12, 1500); //does second roller
-  //Intake.spin(reverse, 100, percent);
-  //wait(350, msec); //rollers done
-  //Intake.stop();
-  //Shooter.spin(reverse, 7, volt); //shooter starts
+  
+  
   pid_drive(4); //goes away from roller
   pid_turn_by(-91);
-  pid_drive(7);
+  pid_drive(15);
   wait(500, msec);
   VisionPid(185, Vision4__GOAL_BLUE);
-  LaunchShootCustom(10.5, 10.75, 500); //first shot, second was 9.25
-  pid_turn_by(-86.5);
+  LaunchShootCustom(10.15, 10.4, 500); //first shot, second was 9.25
+
+  pid_turn_by(180);
+  distance_pid_drive(30);
+  pid_turn_by(92);
+
+
+
   Intake.stop();
   driveBackward(15, 100); //18
-  //Shooter.spin(reverse, 9.25, volt);
-  //pid_drive(10);
-  //pid_drive(-10);
   pid_drive(3);
   Intake.spin(reverse, 12, volt); // intake on
-  pid_drive(-23);
+  pid_drive(-5, 3);
+  wait(400, msec);
+  pid_drive(2, -3);
+  pid_drive(-6, 3);
+  wait(400, msec);
+  pid_drive(2, -3);
+  pid_drive(-9, 3);
+  pid_drive(-2, 3);
   jerk();
-  Shooter.spin(forward, 7.75, volt);
-  pid_turn_by(183);
+  Shooter.spin(forward, 9, volt);
+  pid_turn_by(190);
   wait(500, msec);
   VisionPid(185, Vision4__GOAL_RED);
-  LaunchShootCustom(8.5, 9, 500); // second shot
-  pid_turn_by(-183);
+  LaunchShootCustom(9.5, 10, 500); // second shot
+
+
+
+  pid_turn_by(-180);
+  Intake.stop();
   driveBackward(8, 80); //20
-  pid_drive(-13);
+  pid_drive(3);
+  Intake.spin(reverse, 12, volt); // intake on
+  pid_drive(-6, 3);
+  wait(400, msec);
+  pid_drive(-5, 3);
+  wait(400, msec);
+  pid_drive(-10, 3);
   jerk();
   Shooter.spin(forward, 8, volt);
-  pid_turn_by(183);
+  pid_turn_by(190);
   wait(500, msec);
   VisionPid(185, Vision4__GOAL_RED);
-  LaunchShootCustom(8.5, 9.5, 400); // third shot
-  pid_turn_by(87);
+  LaunchShootCustom(8.5, 9, 500); // third shot
+
+
+
+  pid_turn_by(45);
   pid_drive(-40);
-  pid_turn_by(-45);
-  pid_drive(-20);
   pid_turn_by(90);
   pid_drive(-20);
   Shooter.spin(forward, 7.5, volt);
-  pid_turn_by(-90);
+  pid_turn_by(45);
   VisionPid(185, Vision4__GOAL_BLUE);
-  LaunchShootCustom(8, 8.5, 300);
+  LaunchShootCustom(8.5, 9, 500);
   return;
 
-  pid_drive(-20);
-  pid_turn_by(-90);
+
+
+
   Intake.spin(reverse, 12, volt);
+  pid_drive(-30);
+  pid_turn_by(-90);
+  pid_drive(-60);
+  pid_turn_by(-135);
   distance_pid_drive(30);
-  pid_turn_by(145);
+  Shooter.spin(forward, 9, volt);
+  pid_turn_by(90);
+  VisionPid(178, Vision4__GOAL_RED);
+  LaunchShootCustom(10, 10.5, 400);
+  return;
+    
+
+
   Shooter.spin(reverse, 7, volt);
   pid_drive(50);
   pid_turn_by(-45);
@@ -515,9 +519,12 @@ long pid_turn(double angle) {
   return loop_count;
 }
 
+double abs_angle = 0;
+
 long pid_turn_by (double angle) 
 {
-  return pid_turn(imu.rotation() + angle);
+  abs_angle += angle;
+  return pid_turn(abs_angle);
 }
 
 ////////////////////////////////////
@@ -544,12 +551,12 @@ void tune_turn_pid(void)
 
 ////////////////////////////////////DRIVE_PID////////////////////////////////////////
 
-double drive_kp = 15; //4.5 //3.2, then recently 3.5
+//double drive_kp = 15; //4.5 //3.2, then recently 3.5
 double drive_ki = 0.0015;
 double drive_kd = 0.09;
 double drive_tolerance = 0.1;    // we want to stop when we reach the desired angle +/- 1 degree
 
-long pid_drive(double distance, int32_t time, double space) {
+long pid_drive(double distance, double drive_kp, int32_t time, double space) {
   double delay = 20;   // imu can output reading at a rate of 50 hz (20 msec)
   long loop_count = 0;
   double error = 5000;
@@ -617,7 +624,7 @@ long pid_drive(double distance, int32_t time, double space) {
 ////////////////////////////////////
 void tune_drive_pid(void)
 {
-  drive_kp = 3;
+  //drive_kp = 3;
   drive_ki = 0.0015;
   drive_kd = 0.09;
   drive_tolerance = 0.2;
@@ -1107,7 +1114,7 @@ uint32_t VisionDrive(int GoalW, signature GoalSig) {
 }
 
 void VisionAlignShoot(signature sig, int GoalX) {
-  VisionPid(GoalX, Vision4__GOAL_RED);
+  VisionPid(GoalX, sig);
   vision::object LObject = Vision4.largestObject;
   int width = LObject.width;
   double volt = (width * -.032258) + 9.23871;
