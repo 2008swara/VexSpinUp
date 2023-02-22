@@ -97,7 +97,7 @@ void LaunchShoot(void) {
   wait(100, msec);
   Shooter_pneum.set(false);
   Shooter.stop();
-  shootspin = false;
+  //shootspin = false;
 }
 
 void LaunchShootFar(void) {
@@ -155,12 +155,12 @@ void LaunchShootMedium(void) {
   wait(100, msec);
   Shooter.spin(forward, 9.5, volt);
   Shooter_pneum.set(false);
-  wait(600, msec);
+  wait(500, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 9.5, volt);
+  Shooter.spin(forward, 9.75, volt);
   Shooter_pneum.set(false);
-  wait(650, msec);
+  wait(500, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter_pneum.set(false);
@@ -241,13 +241,49 @@ void autonomous(void) {
   RollerWhole(12, 1500); //does second roller
   
   
-  pid_drive(4); //goes away from roller
+  pid_drive(4); //goes away from roller 
   pid_turn_by(-91);
   pid_drive(15);
   wait(500, msec);
   VisionPid(185, Vision4__GOAL_BLUE);
-  LaunchShootCustom(10.15, 10.4, 500); //first shot, second was 9.25
+  LaunchShootCustom(10.15, 10.4, 500); //first shot
 
+  pid_turn_by(-65);
+  Intake.stop();
+  pid_drive(-40, 30);
+  pid_drive(5);
+  Intake.spin(reverse, 12, volt);
+  pid_drive(-10, 3);
+  wait(400, msec);
+  pid_drive(2, -3);
+  pid_drive(-6, 3);
+  wait(400, msec);
+  pid_drive(10, -3);
+  jerk();
+  Shooter.spin(forward, 8.25, volt);
+  pid_turn_by(130);
+  VisionPid(190, Vision4__GOAL_RED);
+  LaunchShootCustom(9.5, 9.75, 500);
+  pid_turn_by(35);
+  Intake.stop();
+  pid_drive(-30);
+  pid_turn_by(130);
+  pid_drive(-20, 30);
+  pid_drive(5); 
+  pid_drive(-10, 3);
+  wait(400, msec);
+  pid_drive(2, -3);
+  pid_drive(-6, 3);
+  wait(400, msec);
+  jerk();
+  pid_drive(10, -3);
+  jerk();
+  pid_turn_by(190);
+  VisionPid(185, Vision4__GOAL_RED);
+  
+/*
+
+  return;
   pid_turn_by(180);
   distance_pid_drive(30);
   pid_turn_by(92);
@@ -292,33 +328,31 @@ void autonomous(void) {
   VisionPid(185, Vision4__GOAL_RED);
   LaunchShootCustom(8.5, 9, 500); // third shot
 
+*/
 
-
-  pid_turn_by(45);
-  pid_drive(-40);
+  pid_turn_by(53);
+  pid_drive(-50);
   pid_turn_by(90);
   pid_drive(-20);
   Shooter.spin(forward, 7.5, volt);
-  pid_turn_by(45);
+  pid_turn_by(90);
   VisionPid(185, Vision4__GOAL_BLUE);
   LaunchShootCustom(8.5, 9, 500);
-  return;
 
 
 
 
   Intake.spin(reverse, 12, volt);
-  pid_drive(-30);
+  pid_drive(-40);
   pid_turn_by(-90);
   pid_drive(-60);
-  pid_turn_by(-135);
-  distance_pid_drive(30);
-  Shooter.spin(forward, 9, volt);
-  pid_turn_by(90);
+  pid_turn_by(-45);
+  distance_pid_drive(72);
+  Shooter.spin(forward, 8, volt);
   VisionPid(178, Vision4__GOAL_RED);
-  LaunchShootCustom(10, 10.5, 400);
+  LaunchShootCustom(9.5, 10, 400); // fourth shot
   return;
-    
+
 
 
   Shooter.spin(reverse, 7, volt);
@@ -984,7 +1018,7 @@ void RollerAutoDrive(void) {
 double vision_kp = 0.05; //1.5
 double vision_ki = 0.00004; //0.0009
 double vision_kd = 0;
-double vision_tolerance = 2;    // we want to stop when we reach the desired angle +/- 1 degree
+double vision_tolerance = 1;    // we want to stop when we reach the desired angle +/- 1 degree
 
 uint32_t VisionPid(int GoalX, signature ColorSig) {
   vision_in_prog = true;
@@ -1121,7 +1155,7 @@ void VisionAlignShoot(signature sig, int GoalX) {
   CustomLaunch(volt, 10, 10, 2000, 350, 350);
 }
 
-double DefaultV = 8;
+double DefaultV = 6.75;
 void CustomLaunch (double v1, double v2, double v3, double t1, double t2, double t3) {
   Shooter.spin(forward, v1, volt);
   wait(t1, msec);
@@ -1156,6 +1190,14 @@ void VisionAlign(void) {
   vision_in_prog = false;
 }
 
+void VisionAlignRed(void) {
+  VisionPid(185, Vision4__GOAL_RED);
+}
+
+void VisionAlignBlue(void) {
+  VisionPid(185, Vision4__GOAL_BLUE);
+}
+
 void usercontrol(void) {
   // User control code here, inside the loop
   Shooter.spin(forward, DefaultV, volt);
@@ -1172,13 +1214,16 @@ void usercontrol(void) {
     Controller.ButtonR2.pressed(LaunchShoot);
     Controller.ButtonY.pressed(extShoot);
 
-    Controller.ButtonX.pressed(RollerSpinForwards);
-    Controller.ButtonB.pressed(RollerSpinBackwards);
+    //Controller.ButtonX.pressed(RollerSpinForwards);
+    //Controller.ButtonB.pressed(RollerSpinBackwards);
+
+    Controller.ButtonX.pressed(LaunchShootMedium);
 
     Controller.ButtonUp.pressed(ShootOnce);
-    Controller.ButtonDown.pressed(ShooterReverse);
+    //Controller.ButtonDown.pressed(ShooterReverse);
     Controller.ButtonA.pressed(RollerAutoDrive);
-    Controller.ButtonLeft.pressed(VisionAlign);
+    Controller.ButtonLeft.pressed(VisionAlignRed);
+    Controller.ButtonRight.pressed(VisionAlignBlue);
 
   //tune_turn_pid();
   while (1) {

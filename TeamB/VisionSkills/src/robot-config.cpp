@@ -11,7 +11,7 @@ brain  Brain;
 controller Controller;
 
 //signature Vision4__GOAL_RED = signature (1, 8889, 9689, 9289, 477, 815, 646, 3.7, 0);
-signature Vision4__GOAL_RED = signature (1, 9039, 10037, 9538, -287, 267, -10, 3.5, 0);
+signature Vision4__GOAL_RED = signature (1, 9039, 10037, 9538, -287, 267, -10, 6, 0);
 signature Vision4__GOAL_BLUE = signature (2, -2253, -1599, -1926, 7081, 10527, 8804, 3.5, 0);
 vision Vision4 = vision (PORT5, 50, Vision4__GOAL_RED, Vision4__GOAL_BLUE);
 //vision Vision4 = vision (PORT5, 50, Vision4__GOAL_RED);
