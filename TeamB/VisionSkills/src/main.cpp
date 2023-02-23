@@ -248,9 +248,11 @@ void autonomous(void) {
   VisionPid(185, Vision4__GOAL_BLUE);
   LaunchShootCustom(10.15, 10.4, 500); //first shot
 
-  pid_turn_by(-65);
+  pid_drive(5);
+
+  pid_turn_by(-57);
   Intake.stop();
-  pid_drive(-40, 30);
+  pid_drive(-30, 30);
   pid_drive(5);
   Intake.spin(reverse, 12, volt);
   pid_drive(-10, 3);
@@ -258,28 +260,33 @@ void autonomous(void) {
   pid_drive(2, -3);
   pid_drive(-6, 3);
   wait(400, msec);
-  pid_drive(10, -3);
+  pid_drive(14, -3);
   jerk();
   Shooter.spin(forward, 8.25, volt);
   pid_turn_by(130);
-  VisionPid(190, Vision4__GOAL_RED);
-  LaunchShootCustom(9.5, 9.75, 500);
+  VisionPid(190, Vision4__GOAL_RED); 
+  wait(500, msec);
+  LaunchShootCustom(9.5, 9.75, 500); // second shot
   pid_turn_by(35);
   Intake.stop();
-  pid_drive(-30);
-  pid_turn_by(130);
-  pid_drive(-20, 30);
+  pid_drive(-12);
+  pid_turn_by(160);
+  pid_drive(-15, 30);
   pid_drive(5); 
+  Intake.spin(reverse, 12, volt);
   pid_drive(-10, 3);
   wait(400, msec);
   pid_drive(2, -3);
   pid_drive(-6, 3);
   wait(400, msec);
   jerk();
-  pid_drive(10, -3);
+  pid_drive(15, -3);
   jerk();
+  Shooter.spin(forward, 8, volt);
   pid_turn_by(190);
   VisionPid(185, Vision4__GOAL_RED);
+  wait(500, msec);
+  LaunchShootCustom(9.5, 10, 500);
   
 /*
 
@@ -348,11 +355,17 @@ void autonomous(void) {
   pid_drive(-60);
   pid_turn_by(-45);
   distance_pid_drive(72);
+  pid_drive(-40);
   Shooter.spin(forward, 8, volt);
   VisionPid(178, Vision4__GOAL_RED);
   LaunchShootCustom(9.5, 10, 400); // fourth shot
-  return;
 
+
+
+  pid_drive(-40);
+  pid_turn_by(90);
+  RollerWhole(15, 1000);
+  return;
 
 
   Shooter.spin(reverse, 7, volt);
@@ -860,7 +873,7 @@ void SpinIntakeBackwards(void){
   }
   DebounceTimer.reset();
   if (spin2 == false){
-    Intake.spin(reverse, 100, percent);
+    Intake.spin(reverse, 80, percent);
     //Shooter.stop();
     //shootspin = false;
     spin2 = true;
@@ -961,7 +974,7 @@ void SpinShooter(void) {
   if (shootspin == false) {
     Shooter.spin(forward, 6.75, volt); //7
 //    Shooter.spin(forward, 50, percent);
-    Intake.stop();
+    //Intake.stop();
     spin2 = false;
     shootspin = true;
     
