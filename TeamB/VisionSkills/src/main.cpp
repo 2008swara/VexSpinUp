@@ -97,7 +97,7 @@ void LaunchShoot(void) {
   wait(100, msec);
   Shooter_pneum.set(false);
   Shooter.stop();
-  //shootspin = false;
+  shootspin = false;
 }
 
 void LaunchShootFar(void) {
@@ -160,11 +160,12 @@ void LaunchShootMedium(void) {
   wait(100, msec);
   Shooter.spin(forward, 9.75, volt);
   Shooter_pneum.set(false);
-  wait(500, msec);
+  wait(450, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter_pneum.set(false);
   Shooter.stop();
+  shootspin = false;
 }
 
 void RollerWhole(double distance, double time) {
@@ -1014,8 +1015,8 @@ void SpinLong(void) {
   if (shootspin == false) {
     Shooter.spin(forward, 8.25, volt); //7
 //    Shooter.spin(forward, 50, percent);
-    Intake.stop();
-    spin2 = false;
+//    Intake.stop();
+//    spin2 = false;
     shootspin = true;
   }
   else {
@@ -1032,10 +1033,9 @@ void SpinShooter(void) {
   if (shootspin == false) {
     Shooter.spin(forward, 6.75, volt); //7
 //    Shooter.spin(forward, 50, percent);
-    Intake.stop();
-    spin2 = false;
-    shootspin = true;
-    
+//    Intake.stop();
+//    spin2 = false;
+    shootspin = true;    
   }
   else {
     Shooter.stop();
