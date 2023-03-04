@@ -18,8 +18,6 @@
 
 #include <cmath>
 #include "vex.h" 
-#include "robot-config.h"
-#include "VisionConfig.h"
 
 using namespace vex;
 
@@ -105,7 +103,7 @@ void LaunchShoot(void) {
 void LaunchShootFar(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 10.25, volt);
+  Shooter.spin(forward, 10.75, volt);
   Shooter_pneum.set(false);
   wait(700, msec);
   Shooter_pneum.set(true);
@@ -155,12 +153,12 @@ void LaunchShootMedium(void) {
   wait(600, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 9.5, volt);
+  Shooter.spin(forward, 9.75, volt);
   Shooter_pneum.set(false);
   wait(500, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 9.5, volt);
+  Shooter.spin(forward, 9.75, volt);
   Shooter_pneum.set(false);
   wait(450, msec);
   Shooter_pneum.set(true);
@@ -222,75 +220,34 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
-
-  pid_drive(-7.5);
-  pid_turn_by(-90); 
-  Intake.spin(reverse, 12, volt);
-  pid_drive(-18);
-  pid_turn_by(8);
-  pid_drive(-8, 10);
-  pid_drive(5);
-  pid_turn_by(-8);
-  pid_turn_by(-91);
-  Intake.stop();
-  RollerWhole(22, 1200); //does first roller
-  pid_drive(4.5); //goes away from roller
-  Intake.spin(reverse, 12, volt); //intake on
-  pid_turn_by(133); //141
-  pid_drive(-19); //picks up disc
-  Shooter.spin(forward, 7, volt); //shooter on, 8
-  pid_turn_by(-43); //-54
-  Intake.stop();
-  RollerWhole(12, 1500); //does second roller
-  
-  
-  pid_drive(4); //goes away from roller 
-  pid_turn_by(-91);
-  pid_drive(40, 10);
+  driveBackward(12, 20, 1000);
+  Intake.spin(forward, 70, percent); // spins the first roller
+  wait(300, msec);
+  pid_drive(4);
+  Shooter.spin(forward, 11, volt);
+  pid_turn_by(-18);
+  wait(1.5, sec);
+  VisionPid(185, Vision4__GOAL_RED);
   wait(500, msec);
-  pid_turn_by(3);
-  VisionPid(180, Vision4__GOAL_BLUE); 
-  LaunchShootCustom(8.25, 9, 500); //first shot
-  
-  pid_turn_by(0.25);
-
+  LaunchShootFar(); // first shoot
+  pid_turn_by(-115);
+  Intake.stop();
   pid_drive(-20);
-
-  pid_turn_by(-56);
-  Intake.stop();
-  wait(1000, msec);;
-  pid_drive(-30, 70);
-  pid_drive(5);
-  wait(500, msec);
-  pid_turn_by(-2);
-  wait(500, msec);
+  driveBackward(10, 80); // knocks over the stack of three
+  wait(1, msec);
   Intake.spin(reverse, 12, volt);
-  /*pid_drive(-8, 3);
-  wait(400, msec);
-  pid_drive(2, -3);
-  pid_drive(-8, 3);
-  wait(400, msec);
-  pid_drive(-14, -3); */
-  pid_drive(-28, -3);
-  //pid_drive(-7, -3);
-  pid_turn_by(130);
-  Shooter.spin(forward, 7.5, volt);
-  wait(3000, msec);
-  VisionPid(185, Vision4__GOAL_RED); // second shot
-  LaunchShootCustom(8.75, 9.25, 500);
-  Shooter.stop();
-
-
-  pid_turn_by(23);
-  pid_drive(-35);
-  pid_turn_by(-63);
-  extShoot();
-  extShoot();
-  extShoot();
-  extShoot();
-  extShoot();
-
+  pid_drive(-3); // picks up the knocked over stack of three
+  wait(100, msec);
+  Shooter.spin(forward, 8, volt); // turns on shooter for the second shoot 
+  pid_drive(-3); // picks up the knocked over stack of three
+  wait(100, msec);
+  pid_drive(-15);
+  pid_turn_by(80);
+  pid_drive(3);
+  VisionPid(185, Vision4__GOAL_RED);
+  LaunchShootMedium(); // shoots for the second time
   return;
+
 /*
 
   
@@ -1168,6 +1125,7 @@ void ShootOnce(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter_pneum.set(false);
+  wait(100, msec);
 }
 
 void ShooterReverse(void) {
@@ -1391,7 +1349,7 @@ void VisionAlignBlue(void) {
 
 void usercontrol(void) {
   // User control code here, inside the loop
-  Shooter.spin(forward, DefaultV, volt);
+  //Shooter.spin(forward, DefaultV, volt);
 
   double turnImportance = 1;
   double speed_ratio = (11.0 / 5.0);
@@ -1406,7 +1364,7 @@ void usercontrol(void) {
     Controller.ButtonY.pressed(extShoot);
 
     //Controller.ButtonX.pressed(RollerSpinForwards);
-    //Controller.ButtonB.pressed(RollerSpinBackwards);
+    Controller.ButtonB.pressed(RollerSpinBackwards);
 
     Controller.ButtonX.pressed(LaunchShootMedium);
 

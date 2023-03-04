@@ -20,10 +20,10 @@ extern timer PidDriveTimer;
 extern timer RollerTimer;
 extern distance dist_sensor;
 extern optical opt_sensor;
-//extern vision Vision4;
+extern vision Vision4;
 //extern vision Vision5;
-//extern signature Vision4__GOAL_RED;
-//extern signature Vision4__GOAL_BLUE;
+extern signature Vision4__GOAL_RED;
+extern signature Vision4__GOAL_BLUE;
 /** 
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
  * 
