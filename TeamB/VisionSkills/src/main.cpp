@@ -150,7 +150,7 @@ void LongShoot(void) {
 
 
 void LaunchShootMedium(void) {
-  Shooter.spin(forward, 8.5, volt);
+  Shooter.spin(forward, 8.15, volt);
   Shooter_pneum.set(false);
   wait(600, msec);
   Shooter_pneum.set(true);
@@ -1386,7 +1386,7 @@ void VisionAlignRed(void) {
 }
 
 void VisionAlignBlue(void) {
-  VisionPid(180, Vision4__GOAL_BLUE);
+  VisionPid(185, Vision4__GOAL_BLUE);
 }
 
 void usercontrol(void) {

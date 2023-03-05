@@ -97,7 +97,8 @@ void LaunchShoot(void) {
   wait(100, msec);
   Shooter_pneum.set(false);
   Shooter.stop();
-  shootspin = false;
+  Shooter.spin(forward, 6.75, volt);
+//  shootspin = false;
 }
 
 void LaunchShootFar(void) {
