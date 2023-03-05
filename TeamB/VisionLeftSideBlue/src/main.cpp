@@ -104,7 +104,7 @@ void LaunchShoot(void) {
 void LaunchShootFar(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 10.25, volt);
+  Shooter.spin(forward, 10.7, volt);
   Shooter_pneum.set(false);
   wait(700, msec);
   Shooter_pneum.set(true);
@@ -221,31 +221,42 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
-  driveBackward(2, 20, 350);
+  Shooter.spin(forward, 9.5, volt);
+  //RollerWhole(4, 600);
+  driveBackward(5, 30, 600);
   Intake.spin(forward, 70, percent); // spins the first roller
   wait(300, msec);
-  pid_drive(4);
-  Shooter.spin(forward, 11, volt);
-  pid_turn_by(-18);
-  wait(1.5, sec);
-  //VisionPid(185, Vision4__GOAL_BLUE);
+  pid_drive(5);
+  //pid_turn_by(-18);-
+  //wait(1.5, sec);
+  wait(600, msec);
+  //pid_turn_by(-122.5)
+  printf("angle of shoot:%.2f \n", imu.rotation());
+  VisionPid(185, Vision4__GOAL_BLUE);
+  printf("angle of shoot:%.2f \n", imu.rotation());
   LaunchShootFar(); // first shoot
-  pid_turn_by(-115);
+  Shooter.stop();
+  pid_turn_by(-136.6);
   Intake.stop();
-  pid_drive(-20);
-  driveBackward(10, 80); // knocks over the stack of three
-  wait(500, msec);
+  pid_drive(-10, 15);
+  pid_drive(-13, 50); // knocks over the stack of three
+  wait(900, msec);
   Intake.spin(reverse, 12, volt);
-  pid_drive(-3); // picks up the knocked over stack of three
-  wait(100, msec);
-  Shooter.spin(forward, 8, volt); // turns on shooter for the second shoot 
-  pid_drive(-3); // picks up the knocked over stack of three
-  wait(100, msec);
-  pid_drive(-15);
+  pid_drive(-16, -5);
+  //pid_drive(-3); // picks up the knocked over stack of three
+  //wait(100, msec);
+  Shooter.spin(forward, 9, volt); // turns on shooter for the second shoot 
+  pid_drive(-6, -6);
+  //pid_drive(-3); // picks up the knocked over stack of three
+  //wait(100, msec);
+  //pid_drive(-15);
   pid_turn_by(80);
   pid_drive(3);
-  //VisionPid(185, Vision4__GOAL_BLUE);
-  LaunchShootMedium(); // shoots for the second time
+  printf("angle of shoot: %.2f \n", imu.rotation());
+  VisionPid(185, Vision4__GOAL_BLUE);
+  printf("robot angle shoot:%.2f \n", imu.rotation());
+  LaunchShootCustom(9.8, 10.2, 500);
+  //LaunchShootMedium(); // shoots for the second time
   return;
 
 /*

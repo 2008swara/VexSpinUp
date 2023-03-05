@@ -104,7 +104,7 @@ void LaunchShoot(void) {
 void LaunchShootFar(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 10.25, volt);
+  Shooter.spin(forward, 10.5, volt);
   Shooter_pneum.set(false);
   wait(700, msec);
   Shooter_pneum.set(true);
@@ -222,28 +222,30 @@ void pre_auton(void) {
 
 void autonomous(void) {
   Shooter.spin(forward, 9, volt);
-  pid_drive(-24);
-  pid_turn_by(89);
-  driveBackward(15, 30, 800);
+  pid_drive(-18);
+  pid_turn_by(90);
+  driveBackward(12, 30, 800);
   Intake.spin(forward, 70, percent);
   wait(300, msec);
   pid_drive(3);
-  pid_turn_by(-2);
+  pid_turn_by(1);
+  pid_drive(2);
+  //printf("angle shoot: %.2f \n", imu.rotation());
   //VisionPid(185, Vision4__GOAL_BLUE);
+  //printf("angle shoot: %.2f \n", imu.rotation());
   LaunchShootFar();
-  pid_turn_by(133);
+  pid_turn_by(134.5);
   Intake.spin(reverse, 12, volt);
-  pid_drive(-30);
-  Shooter.spin(forward, 8.5, volt);
-  pid_drive(-40);
+  pid_drive(-30, 8);
+  Shooter.spin(forward, 8.7, volt);
+  pid_drive(-40, 8);
   pid_turn_by(-98);
-  //VisionPid(185, Vision4__GOAL_BLUE);
-  LaunchShootMedium();
-  Shooter.spin(forward, 2, volt);
-  Shooter_pneum.set(true);
-  wait(100, msec);
-  Shooter_pneum.set(false);
-  Shooter.stop();  
+  pid_drive(5);
+  printf("angle shoot: %.2f \n", imu.rotation());
+  VisionPid(185, Vision4__GOAL_BLUE);
+  printf("angle shoot: %.2f \n", imu.rotation());
+  LaunchShootCustom(9.75, 10, 500);
+  //LaunchShootMedium();
 
 
   return;
@@ -1163,7 +1165,7 @@ void RollerAutoDrive(void) {
 }
 
 double vision_kp = 0.05; //1.5
-double vision_ki = 0.00004; //0.0009
+double vision_ki = 0.000004; //0.0009
 double vision_kd = 0;
 double vision_tolerance = 1;    // we want to stop when we reach the desired angle +/- 1 degree
 
