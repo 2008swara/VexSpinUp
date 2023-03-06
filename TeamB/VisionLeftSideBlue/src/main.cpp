@@ -18,8 +18,6 @@
 
 #include <cmath>
 #include "vex.h" 
-#include "robot-config.h"
-#include "VisionConfig.h"
 
 using namespace vex;
 
@@ -99,13 +97,14 @@ void LaunchShoot(void) {
   wait(100, msec);
   Shooter_pneum.set(false);
   Shooter.stop();
-  shootspin = false;
+  Shooter.spin(forward, 6.75, volt);
+//  shootspin = false;
 }
 
 void LaunchShootFar(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 10.25, volt);
+  Shooter.spin(forward, 10.7, volt);
   Shooter_pneum.set(false);
   wait(700, msec);
   Shooter_pneum.set(true);
@@ -150,7 +149,7 @@ void LongShoot(void) {
 
 
 void LaunchShootMedium(void) {
-  Shooter.spin(forward, 8.15, volt);
+  Shooter.spin(forward, 8.5, volt);
   Shooter_pneum.set(false);
   wait(600, msec);
   Shooter_pneum.set(true);
@@ -222,100 +221,44 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
-
-  pid_drive(-7.5);
-  pid_turn_by(-90); 
-  Intake.spin(reverse, 12, volt);
-  pid_drive(-18);
-  pid_turn_by(8);
-  pid_drive(-8, 10);
+  Shooter.spin(forward, 9.5, volt);
+  //RollerWhole(4, 600);
+  driveBackward(5, 30, 600);
+  Intake.spin(forward, 70, percent); // spins the first roller
+  wait(300, msec);
   pid_drive(5);
-  pid_turn_by(-8);
-  pid_turn_by(-91);
-  Intake.stop();
-  RollerWhole(22, 1200); //does first roller
-  pid_drive(4.5); //goes away from roller
-  Intake.spin(reverse, 12, volt); //intake on
-  pid_turn_by(133); //141
-  pid_drive(-19); //picks up disc
-  Shooter.spin(forward, 7, volt); //shooter on, 8
-  pid_turn_by(-43); //-54
-  Intake.stop();
-  RollerWhole(12, 1500); //does second roller
-  
-  
-  pid_drive(4); //goes away from roller 
-  pid_turn_by(-91);
-  pid_drive(40, 10);
-  wait(500, msec);
-  pid_turn_by(3);
-  VisionPid(180, Vision4__GOAL_BLUE); 
-  LaunchShootCustom(8.25, 9, 500); //first shot
-  
-  pid_turn_by(0.25);
-
-<<<<<<< HEAD
-  pid_drive(5);
-
-  pid_turn_by(-57);
-  Intake.stop();
-  pid_drive(-30, 30);
-=======
-  pid_drive(-20);
-
-  pid_turn_by(-56);
-  Intake.stop();
-  wait(1000, msec);;
-  pid_drive(-30, 70);
->>>>>>> 196ee2d5d57b1cbf9470c0ecc49e41a0060129c5
-  pid_drive(5);
-  wait(500, msec);
-  pid_turn_by(-2);
-  wait(500, msec);
-  Intake.spin(reverse, 12, volt);
-  /*pid_drive(-8, 3);
-  wait(400, msec);
-  pid_drive(2, -3);
-  pid_drive(-8, 3);
-  wait(400, msec);
-<<<<<<< HEAD
-  pid_drive(14, -3);
-  jerk();
-  Shooter.spin(forward, 8.25, volt);
-  pid_turn_by(130);
-  VisionPid(190, Vision4__GOAL_RED); 
-  wait(500, msec);
-  LaunchShootCustom(9.5, 9.75, 500); // second shot
-  pid_turn_by(35);
-  Intake.stop();
-  pid_drive(-12);
-  pid_turn_by(160);
-  pid_drive(-15, 30);
-  pid_drive(5); 
-  Intake.spin(reverse, 12, volt);
-  pid_drive(-10, 3);
-=======
-  pid_drive(-14, -3); */
-  pid_drive(-28, -3);
-  //pid_drive(-7, -3);
-  pid_turn_by(130);
-  Shooter.spin(forward, 7.5, volt);
-  wait(3000, msec);
-  VisionPid(185, Vision4__GOAL_RED); // second shot
-  LaunchShootCustom(8.75, 9.25, 500);
+  //pid_turn_by(-18);-
+  //wait(1.5, sec);
+  wait(600, msec);
+  //pid_turn_by(-122.5)
+  printf("angle of shoot:%.2f \n", imu.rotation());
+  VisionPid(185, Vision4__GOAL_BLUE);
+  printf("angle of shoot:%.2f \n", imu.rotation());
+  LaunchShootFar(); // first shoot
   Shooter.stop();
-
-
-  pid_turn_by(23);
-  pid_drive(-35);
-  pid_turn_by(-63);
-  extShoot();
-  extShoot();
-  extShoot();
-  extShoot();
-  extShoot();
-
+  pid_turn_by(-136.6);
+  Intake.stop();
+  pid_drive(-10, 15);
+  pid_drive(-13, 50); // knocks over the stack of three
+  wait(900, msec);
+  Intake.spin(reverse, 12, volt);
+  pid_drive(-16, -5);
+  //pid_drive(-3); // picks up the knocked over stack of three
+  //wait(100, msec);
+  Shooter.spin(forward, 9, volt); // turns on shooter for the second shoot 
+  pid_drive(-6, -6);
+  //pid_drive(-3); // picks up the knocked over stack of three
+  //wait(100, msec);
+  //pid_drive(-15);
+  pid_turn_by(80);
+  pid_drive(3);
+  printf("angle of shoot: %.2f \n", imu.rotation());
+  VisionPid(185, Vision4__GOAL_BLUE);
+  printf("robot angle shoot:%.2f \n", imu.rotation());
+  LaunchShootCustom(9.8, 10.2, 500);
+  //LaunchShootMedium(); // shoots for the second time
   return;
+
 /*
 
   
@@ -426,35 +369,21 @@ void autonomous(void) {
   pid_turn_by(10);
   Intake.spin(reverse, 12, volt);
   /*pid_drive(-10, 3);
->>>>>>> 196ee2d5d57b1cbf9470c0ecc49e41a0060129c5
   wait(400, msec);
   pid_drive(2, -3);
   pid_drive(-4, 3);
   wait(400, msec);
-<<<<<<< HEAD
-  jerk();
-  pid_drive(15, -3);
-=======
   pid_drive(-12, -3); */
   pid_drive(-24, -8);
   Shooter.spin(forward, 8, volt);
->>>>>>> 196ee2d5d57b1cbf9470c0ecc49e41a0060129c5
   jerk();
-  Shooter.spin(forward, 8, volt);
   pid_turn_by(190);
-<<<<<<< HEAD
-  VisionPid(185, Vision4__GOAL_RED);
-  wait(500, msec);
-  LaunchShootCustom(9.5, 10, 500);
-  
-=======
   wait(500, msec);
   VisionPid(180, Vision4__GOAL_RED); // fifth shot  
   LaunchShootCustom(9, 9.5, 500);
 
   return;
 
->>>>>>> 196ee2d5d57b1cbf9470c0ecc49e41a0060129c5
 /*
 
   return;
@@ -525,12 +454,6 @@ void autonomous(void) {
   pid_drive(-60);
   pid_turn_by(-45);
   distance_pid_drive(72);
-<<<<<<< HEAD
-  pid_drive(-40);
-  Shooter.spin(forward, 8, volt);
-  VisionPid(178, Vision4__GOAL_RED);
-  LaunchShootCustom(9.5, 10, 400); // fourth shot
-=======
   Shooter.spin(forward, 9, volt);
   pid_drive(-20);
   VisionPid(185, Vision4__GOAL_RED);
@@ -589,14 +512,7 @@ void autonomous(void) {
   extShoot();
 
   return;
->>>>>>> 196ee2d5d57b1cbf9470c0ecc49e41a0060129c5
 
-
-
-  pid_drive(-40);
-  pid_turn_by(90);
-  RollerWhole(15, 1000);
-  return;
 
 
   Shooter.spin(reverse, 7, volt);
@@ -1104,7 +1020,7 @@ void SpinIntakeBackwards(void){
   }
   DebounceTimer.reset();
   if (spin2 == false){
-    Intake.spin(reverse, 80, percent);
+    Intake.spin(reverse, 100, percent);
     //Shooter.stop();
     //shootspin = false;
     spin2 = true;
@@ -1205,16 +1121,9 @@ void SpinShooter(void) {
   if (shootspin == false) {
     Shooter.spin(forward, 6.75, volt); //7
 //    Shooter.spin(forward, 50, percent);
-<<<<<<< HEAD
-    //Intake.stop();
-    spin2 = false;
-    shootspin = true;
-    
-=======
 //    Intake.stop();
 //    spin2 = false;
     shootspin = true;    
->>>>>>> 196ee2d5d57b1cbf9470c0ecc49e41a0060129c5
   }
   else {
     Shooter.stop();
@@ -1227,6 +1136,7 @@ void ShootOnce(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter_pneum.set(false);
+  wait(100, msec);
 }
 
 void ShooterReverse(void) {
@@ -1445,12 +1355,12 @@ void VisionAlignRed(void) {
 }
 
 void VisionAlignBlue(void) {
-  VisionPid(185, Vision4__GOAL_BLUE);
+  VisionPid(180, Vision4__GOAL_BLUE);
 }
 
 void usercontrol(void) {
   // User control code here, inside the loop
-  Shooter.spin(forward, DefaultV, volt);
+  //Shooter.spin(forward, DefaultV, volt);
 
   double turnImportance = 1;
   double speed_ratio = (11.0 / 5.0);
@@ -1465,7 +1375,7 @@ void usercontrol(void) {
     Controller.ButtonY.pressed(extShoot);
 
     //Controller.ButtonX.pressed(RollerSpinForwards);
-    //Controller.ButtonB.pressed(RollerSpinBackwards);
+    Controller.ButtonB.pressed(RollerSpinBackwards);
 
     Controller.ButtonX.pressed(LaunchShootMedium);
 
