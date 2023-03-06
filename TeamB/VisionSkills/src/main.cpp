@@ -98,8 +98,9 @@ void LaunchShoot(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter_pneum.set(false);
-  Shooter.stop();
-  shootspin = false;
+  Shooter.spin(forward, 6.75, volt);
+  //Shooter.stop();
+  //shootspin = false;
 }
 
 void LaunchShootFar(void) {
@@ -166,8 +167,9 @@ void LaunchShootMedium(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
   Shooter_pneum.set(false);
-  Shooter.stop();
-  shootspin = false;
+  Shooter.spin(forward, 6.75, volt);
+  //Shooter.stop();
+  //shootspin = false;
 }
 
 void RollerWhole(double distance, double time) {
@@ -252,18 +254,18 @@ void autonomous(void) {
   VisionPid(180, Vision4__GOAL_BLUE); 
   LaunchShootCustom(8.25, 9, 500); //first shot
   
-  pid_turn_by(0.25);
+  //pid_turn_by(0.25);
 
-  pid_drive(-20);
+  pid_drive(5);
 
   pid_turn_by(-56);
   Intake.stop();
-  wait(1000, msec);;
-  pid_drive(-30, 70);
+  //wait(1000, msec);;
+  pid_drive(-35, 70);
   pid_drive(5);
-  wait(500, msec);
+  //wait(500, msec);
   pid_turn_by(-2);
-  wait(500, msec);
+  //wait(500, msec);
   Intake.spin(reverse, 12, volt);
   /*pid_drive(-8, 3);
   wait(400, msec);
@@ -271,7 +273,7 @@ void autonomous(void) {
   pid_drive(-8, 3);
   wait(400, msec);
   pid_drive(-14, -3); */
-  pid_drive(-28, -3);
+  pid_drive(-28, 5);
   //pid_drive(-7, -3);
   pid_turn_by(130);
   Shooter.spin(forward, 7.5, volt);
@@ -279,6 +281,45 @@ void autonomous(void) {
   VisionPid(185, Vision4__GOAL_RED); // second shot
   LaunchShootCustom(8.75, 9.25, 500);
   Shooter.stop();
+
+
+  pid_turn_by(-92);
+  pid_drive(-22, 50);
+  pid_drive(4);
+  Intake.spin(reverse, 12, volt);
+  Shooter.spin(forward, 8.25, volt);
+  pid_drive(-16, 5);
+  pid_turn_by(-50);
+  VisionPid(185, Vision4__GOAL_RED);
+  LaunchShootCustom(9, 9.3, 500);
+  pid_turn_by(-28);
+  pid_drive(-30);
+  pid_turn_by(133);
+  Shooter.spin(forward, 7.2, volt);
+  pid_drive(-38);
+  pid_turn_by(90);
+  VisionPid(185, Vision4__GOAL_BLUE);
+  LaunchShootCustom(8, 8.4, 500);
+  Intake.stop();
+  pid_drive(-5);
+  pid_turn_by(-135);
+  pid_drive(-33);
+  pid_turn_by(90);
+  pid_drive(-43);
+  pid_turn_by(90);
+  RollerWhole(15, 800);
+  pid_drive(20);
+  pid_turn_by(90);
+  RollerWhole(25, 2000);
+  pid_drive(13);
+  pid_turn_by(-45);
+  pid_drive(-8);
+  extShoot();
+  extShoot();
+  extShoot();
+  extShoot();
+  extShoot();
+  return;
 
 
   pid_turn_by(23);
