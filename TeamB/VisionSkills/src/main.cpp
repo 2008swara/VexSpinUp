@@ -247,22 +247,22 @@ void autonomous(void) {
   
   
   pid_drive(4); //goes away from roller 
-  pid_turn_by(-91);
-  pid_drive(40, 10);
+  pid_turn_by(-90.5);
+  pid_drive(33, 10);
   wait(500, msec);
   pid_turn_by(3);
   VisionPid(180, Vision4__GOAL_BLUE); 
-  LaunchShootCustom(8.25, 9, 500); //first shot
+  LaunchShootCustom(8.5, 9, 500); //first shot
   
   //pid_turn_by(0.25);
 
-  pid_drive(5);
+  pid_drive(-11);
 
   pid_turn_by(-56);
   Intake.stop();
   //wait(1000, msec);;
-  pid_drive(-35, 70);
-  pid_drive(5);
+  pid_drive(-28, 70);
+  pid_drive(5);                                                                    
   //wait(500, msec);
   pid_turn_by(-2);
   //wait(500, msec);
@@ -273,37 +273,44 @@ void autonomous(void) {
   pid_drive(-8, 3);
   wait(400, msec);
   pid_drive(-14, -3); */
-  pid_drive(-28, 5);
+  pid_drive(-10, 5);
+  pid_drive(-8, 3);
+  Shooter.spin(forward, 7.5, volt);
+  pid_drive(-9, 3);
   //pid_drive(-7, -3);
   pid_turn_by(130);
-  Shooter.spin(forward, 7.5, volt);
-  wait(3000, msec);
+  pid_drive(3);
   VisionPid(185, Vision4__GOAL_RED); // second shot
   LaunchShootCustom(8.75, 9.25, 500);
   Shooter.stop();
+  Intake.stop();
 
-
-  pid_turn_by(-92);
-  pid_drive(-22, 50);
+  pid_turn_by(100);
+  pid_drive(-18, 70);
   pid_drive(4);
   Intake.spin(reverse, 12, volt);
   Shooter.spin(forward, 8.25, volt);
-  pid_drive(-16, 5);
+  pid_drive(-16, 3);
   pid_turn_by(-50);
+  pid_drive(5);
   VisionPid(185, Vision4__GOAL_RED);
-  LaunchShootCustom(9, 9.3, 500);
-  pid_turn_by(-28);
-  pid_drive(-30);
-  pid_turn_by(133);
+  LaunchShootCustom(9, 9.3, 500); // third shot
+  pid_turn_by(-27);
+  pid_drive(-27);
+  pid_turn_by(133.5);
   Shooter.spin(forward, 7.2, volt);
-  pid_drive(-38);
-  pid_turn_by(90);
-  VisionPid(185, Vision4__GOAL_BLUE);
-  LaunchShootCustom(8, 8.4, 500);
-  Intake.stop();
-  pid_drive(-5);
-  pid_turn_by(-135);
   pid_drive(-33);
+  pid_turn_by(90);
+  pid_drive(3);
+  VisionPid(185, Vision4__GOAL_BLUE);
+  LaunchShootCustom(8, 8.4, 500); // fourth shot
+  Intake.stop();
+
+
+
+  pid_drive(-10);
+  pid_turn_by(-136);
+  pid_drive(-50);
   pid_turn_by(90);
   pid_drive(-43);
   pid_turn_by(90);
