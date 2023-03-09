@@ -104,7 +104,7 @@ void LaunchShoot(void) {
 void LaunchShootFar(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 10.75, volt);
+  Shooter.spin(forward, 10, volt);
   Shooter_pneum.set(false);
   wait(700, msec);
   Shooter_pneum.set(true);
@@ -154,7 +154,7 @@ void LaunchShootMedium(void) {
   wait(600, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 9.75, volt);
+  Shooter.spin(forward, 10, volt); //9.75
   Shooter_pneum.set(false);
   wait(500, msec);
   Shooter_pneum.set(true);
@@ -225,10 +225,12 @@ void autonomous(void) {
   Intake.spin(forward, 70, percent); // spins the first roller
   wait(300, msec);
   pid_drive(4);
-  Shooter.spin(forward, 11, volt);
-  pid_turn_by(-18);
+  Shooter.spin(forward, 9.75, volt);
+  pid_turn_by(-19.54); //18
   wait(1.5, sec);
+  /*printf("first shot angle before %.2f\n", imu.rotation()); //-20.46
   VisionPid(185, Vision4__GOAL_RED);
+  printf("first shot angle after %.2f\n", imu.rotation()); //-21.8 */
   wait(500, msec);
   LaunchShootFar(); // first shoot
   pid_turn_by(-115);
@@ -243,9 +245,11 @@ void autonomous(void) {
   pid_drive(-3); // picks up the knocked over stack of three
   wait(100, msec);
   pid_drive(-15);
-  pid_turn_by(80);
+  pid_turn_by(85); //80
   pid_drive(3);
+  /*printf("second shot angle before %.2f\n", imu.rotation()); //-54.82
   VisionPid(185, Vision4__GOAL_RED);
+  printf("second shot angle after %.2f\n", imu.rotation()); //-49.06 */
   LaunchShootMedium(); // shoots for the second time
   return;
 

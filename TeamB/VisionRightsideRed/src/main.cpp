@@ -221,7 +221,8 @@ void pre_auton(void) {
 
 void autonomous(void) {
   Shooter.spin(forward, 9, volt);
-  pid_drive(-24);
+  pid_drive(-6); //-24
+  wait(500, msec);  
   pid_turn_by(89);
   driveBackward(15, 30, 800);
   Intake.spin(forward, 70, percent);
