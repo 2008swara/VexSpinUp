@@ -230,7 +230,7 @@ void autonomous(void) {
   Intake.spin(reverse, 12, volt);
   pid_drive(-18);
   pid_turn_by(8);
-  pid_drive(-8, 10);
+  pid_drive(-8);
   pid_drive(5);
   pid_turn_by(-8);
   pid_turn_by(-91);
@@ -240,31 +240,30 @@ void autonomous(void) {
   Intake.spin(reverse, 12, volt); //intake on
   pid_turn_by(133); //141
   pid_drive(-19); //picks up disc
-  Shooter.spin(forward, 7, volt); //shooter on, 8
+  Shooter.spin(forward, 6.8, volt); //shooter on, 8
   pid_turn_by(-43); //-54
   Intake.stop();
-  RollerWhole(12, 1500); //does second roller
+  RollerWhole(12, 800); //does second roller
   
   
-  pid_drive(4); //goes away from roller 
+  pid_drive(6); //goes away from roller 
   pid_turn_by(-90);
-  pid_drive(33, 10);
-  wait(500, msec);
-  pid_turn_by(3);
+  VisionPid(180, Vision4__GOAL_BLUE);
+  pid_drive(33, 15);
+  //pid_turn_by(3);
   VisionPid(180, Vision4__GOAL_BLUE); 
-  LaunchShootCustom(8.5, 8.9, 500); //first shot
+  LaunchShootCustom(8.5, 8.8, 500); //first shot
   
   //pid_turn_by(0.25);
-
   pid_drive(-11);
 
-  pid_turn_by(-55);
+  pid_turn_by(-51);
   Intake.stop();
   //wait(1000, msec);;
   pid_drive(-28, 70);
   pid_drive(5);                                                                    
   //wait(500, msec);
-  pid_turn_by(-2);
+  pid_turn_by(-3);
   //wait(500, msec);
   Intake.spin(reverse, 12, volt);
   /*pid_drive(-8, 3);
@@ -276,54 +275,58 @@ void autonomous(void) {
   pid_drive(-10, 5);
   pid_drive(-8, 3);
   Shooter.spin(forward, 7, volt);
-  pid_drive(-9, 3);
+  pid_drive(-9, 6);
   //pid_drive(-7, -3);
   pid_turn_by(130);
-  pid_drive(3);
-  VisionPid(190, Vision4__GOAL_RED); // second shot
-  LaunchShootCustom(8.5, 9.25, 500);
+  pid_drive(3, 25); 
+  VisionPid(175, Vision4__GOAL_RED); // second shot
+  LaunchShootCustom(8.5, 9.45, 500);
   Shooter.stop();
   Intake.stop();
   pid_drive(-1.5);
 
-  pid_turn_by(100);
-  pid_drive(-15, 130);
+  pid_turn_by(104);
+  pid_drive(-15, 70);
   pid_drive(4);
   Intake.spin(reverse, 12, volt);
-  Shooter.spin(forward, 7.6, volt);
-  pid_drive(-16, 2);
+  Shooter.spin(forward, 7.2, volt);
+  pid_drive(-9, 2);
+  wait(300, msec);
+  pid_drive(-7, 2);
   pid_turn_by(-50);
   pid_drive(5);
   VisionPid(185, Vision4__GOAL_RED);
-  LaunchShootCustom(8.9, 9.2, 500); // third shot
-  pid_turn_by(-27);
-  pid_drive(-30, 33);
+  LaunchShootCustom(9.1, 9.3, 500); // third shot
+  pid_turn_by(-25);
+  pid_drive(-30, 35);
   pid_turn_by(134);
   Shooter.spin(forward, 6.7, volt);
   pid_drive(-39, 28);
   pid_turn_by(90);
   pid_drive(3);
-  VisionPid(190, Vision4__GOAL_BLUE);
+  VisionPid(180, Vision4__GOAL_BLUE);
   LaunchShootCustom(8, 8.4, 500); // fourth shot
   Intake.stop();
 
 
 
-  pid_drive(-12.5);
+  pid_drive(-12.5, 30);
   pid_turn_by(-136);
-  pid_drive(-44, 30);
+  pid_drive(-44, 70);
   pid_turn_by(90);
-  pid_drive(-41, 40);
-  printf("is this angle printing right ehehhahwhwhhawh\n");
-  pid_turn_by(-90);
-  RollerWhole(19, 950);
-  pid_drive(13, 35);
+  pid_drive(-41, 70);
+  pid_turn_by(-93);
+  RollerWhole(21, 1100);
+  pid_drive(13, 70);
   pid_turn_by(90);
-  RollerWhole(27, 2000);
-  pid_drive(17, 50);
+  Intake.spin(reverse, 12, volt);
+  pid_drive(-10, 30);
+  Intake.stop();
+  RollerWhole(15, 1000);
+  pid_drive(15, 70);
   pid_turn_by(-50);
   extShoot();
-  pid_drive(-8);
+  pid_drive(-8, 70);
   extShoot();
   extShoot();
   extShoot();
