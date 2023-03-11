@@ -51,7 +51,7 @@ bool vision_in_prog = false;
 #define PRINT_LEVEL_NORMAL 1
 #define PRINT_LEVEL_DEBUG 2
 
-#define DEBUG_LEVEL PRINT_LEVEL_DEBUG
+#define DEBUG_LEVEL PRINT_LEVEL_MUST
 
 #define DEBUG_PRINT(dl, fmt, args...) {if (dl <= DEBUG_LEVEL) printf(fmt, ## args);}
 
@@ -227,7 +227,7 @@ void autonomous(void) {
 
   pid_drive(-7.5);
   pid_turn_by(-90); 
-  Intake.spin(reverse, 12, volt);
+  Intake.spin(reverse, 12, volt);                                  
   pid_drive(-18);
   pid_turn_by(8);
   pid_drive(-8);
@@ -248,11 +248,23 @@ void autonomous(void) {
   
   pid_drive(6); //goes away from roller 
   pid_turn_by(-90);
-  VisionPid(180, Vision4__GOAL_BLUE);
+
+  pid_turn_by(-9);
+
+  //printf("shoot angle before %.2f\n ",  imu.rotation());
+  //VisionPid(180, Vision4__GOAL_BLUE);
+  //printf("shoot angle after %.2f\n ",  imu.rotation());
   pid_drive(33, 15);
   //pid_turn_by(3);
-  VisionPid(180, Vision4__GOAL_BLUE); 
-  LaunchShootCustom(8.2, 8.9, 500); //first shot
+  //printf("shoot angle before %.2f\n ",  imu.rotation());
+
+  pid_turn_by(9.4);
+
+  //VisionPid(180, Vision4__GOAL_BLUE); 
+  //printf("shoot angle after %.2f\n ",  imu.rotation());
+  LaunchShootCustom(8.2, 8.7, 500); //first shot
+
+  pid_turn_by(-3);
   
   //pid_turn_by(0.25);
   pid_drive(-11);
@@ -279,42 +291,73 @@ void autonomous(void) {
   //pid_drive(-7, -3);
   pid_turn_by(130);
   pid_drive(6, 25); 
-  VisionPid(175, Vision4__GOAL_RED); // second shot
-  LaunchShootCustom(8.5, 9, 500);
+  //printf("shoot angle before %.2f\n ",  imu.rotation());
+
+  pid_turn_by(7.3);
+
+  //VisionPid(175, Vision4__GOAL_RED); // second shot
+  //printf("shoot angle after %.2f\n ",  imu.rotation());
+  LaunchShootCustom(8.5, 9, 500); // second shot
+
 
 
 
   //pid_drive(3);
   Shooter.stop();
   Intake.stop();
-  pid_drive(-1.5);
+  pid_drive(-3.5);
 
   pid_turn_by(104);
   pid_drive(-15, 70);
   pid_drive(4);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
   Intake.spin(reverse, 12, volt);
   Shooter.spin(forward, 7.2, volt);
-  pid_drive(-7, 2);
+  pid_drive(-6, 2);
   wait(500, msec);
-  pid_drive(-9, 2);
+  pid_drive(3, -2);
+  pid_drive(-8, 2);
+  wait(500, msec);
+  pid_drive(3, -2);
+  pid_drive(-8, 2);
   pid_turn_by(-50);
   pid_drive(5);
-  VisionPid(185, Vision4__GOAL_RED);
+  //printf("shoot angle before %.2f\n ",  imu.rotation());
+
+  pid_turn_by(-23.5);
+
+  //VisionPid(185, Vision4__GOAL_RED);
+  //printf("shoot angle after %.2f\n ",  imu.rotation());
   LaunchShootCustom(9.1, 9.2, 500); // third shot
 
   pid_turn_by(10);
   pid_drive(5);
-  pid_turn_by(88);
+  pid_turn_by(94);
   Intake.spin(reverse, 12, volt);
   pid_drive(-35, 10);
   pid_drive(-35, 15);
   Shooter.spin(forward, 7.5, volt);
   pid_turn_by(-50);
   pid_drive(18);
-  VisionPid(175, Vision4__GOAL_RED);
+  //printf("shoot angle before %.2f\n ",  imu.rotation());
+
+  pid_turn_by(-9.3);
+
+  //VisionPid(175, Vision4__GOAL_RED);
+  //printf("shoot angle after %.2f\n ",  imu.rotation());
   LaunchShootCustom(8, 8.4, 500); // fourth shot
 
 
+
+  pid_turn_by(9);
+  pid_drive(-40);
+  pid_turn_by(49);
+  extShoot();
+  extShoot();
+  extShoot();
+  extShoot();
+  extShoot();
+
+  return;
 
   pid_turn_by(9);
   pid_drive(-35);

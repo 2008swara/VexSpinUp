@@ -103,7 +103,7 @@ void LaunchShoot(void) {
 void LaunchShootFar(void) {
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 10.25, volt);
+  Shooter.spin(forward, 10, volt);
   Shooter_pneum.set(false);
   wait(700, msec);
   Shooter_pneum.set(true);
@@ -220,32 +220,29 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
-  Shooter.spin(forward, 9, volt);
-  pid_drive(-6); //-24
-  wait(500, msec);  
-  pid_turn_by(89);
+  Shooter.spin(forward, 8.6, volt);
+  pid_drive(-21, 5); //-24
+  pid_turn_by(90);
   driveBackward(15, 30, 800);
   Intake.spin(forward, 70, percent);
   wait(260, msec);
   pid_drive(3);
-  pid_turn_by(-2);
+  //pid_turn_by(-2);
   //VisionPid(185, Vision4__GOAL_RED);
   LaunchShootFar();
-  pid_turn_by(133);
-  wait(300, msec);
+  pid_turn_by(132);
+  //wait(300, msec);
   Intake.spin(reverse, 12, volt);
-  pid_drive(-30); //picking up 3 dics in
-  pid_drive(-20);
+  pid_drive(-15, 15); 
+  pid_drive(-15, 15);
+  pid_drive(-20, 15);
   Shooter.spin(forward, 8.5, volt);
-  wait(500, msec);
-  pid_turn_by(-98);
+  pid_drive(-15, 15);
+  //wait(500, msec);
+  pid_drive(3);
+  pid_turn_by(-95);
   //VisionPid(185, Vision4__GOAL_RED);
-  LaunchShootMedium();
-  Shooter.spin(forward, 2, volt);
-  Shooter_pneum.set(true);
-  wait(100, msec);
-  Shooter_pneum.set(false);
-  Shooter.stop();  
+  LaunchShootMedium(); 
 
 
   return;
