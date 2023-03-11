@@ -148,17 +148,17 @@ void LongShoot(void) {
 
 
 void LaunchShootMedium(void) {
-  Shooter.spin(forward, 8.5, volt);
+  Shooter.spin(forward, 8.3, volt);
   Shooter_pneum.set(false);
   wait(600, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 9.5, volt);
+  Shooter.spin(forward, 9.8, volt);
   Shooter_pneum.set(false);
   wait(500, msec);
   Shooter_pneum.set(true);
   wait(100, msec);
-  Shooter.spin(forward, 9.5, volt);
+  Shooter.spin(forward, 10.3, volt);
   Shooter_pneum.set(false);
   wait(450, msec);
   Shooter_pneum.set(true);
@@ -227,19 +227,19 @@ void autonomous(void) {
   Intake.spin(forward, 70, percent);
   wait(260, msec);
   pid_drive(3);
-  //pid_turn_by(-2);
+  pid_turn_by(-2);
   //VisionPid(185, Vision4__GOAL_RED);
   LaunchShootFar();
-  pid_turn_by(132);
+  pid_turn_by(136);
   //wait(300, msec);
   Intake.spin(reverse, 12, volt);
   pid_drive(-15, 15); 
   pid_drive(-15, 15);
   pid_drive(-20, 15);
-  Shooter.spin(forward, 8.5, volt);
+  Shooter.spin(forward, 8.3, volt);
   pid_drive(-15, 15);
   //wait(500, msec);
-  pid_drive(3);
+  pid_drive(6);
   pid_turn_by(-95);
   //VisionPid(185, Vision4__GOAL_RED);
   LaunchShootMedium(); 
